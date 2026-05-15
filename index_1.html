@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scam Likely — Scam Call Database</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ─── CONFIG ─────────────────────────────────────── */
+  /* Edit EXPIRY_DAYS to change how long a number stays flagged after date_added */
+  /* Default: 365 days */
+
+  :root {
+    --bg: #f8f8f6;
+    --surface: #ffffff;
+    --border: #e8e8e4;
+    --text: #111110;
+    --text-muted: #888884;
+    --accent: #e63946;
+    --accent-light: #fff0f1;
+    --accent-mid: #ffd6d8;
+    --green: #2d9a5f;
+    --green-light: #edfaf3;
+    --amber: #d97706;
+    --amber-light: #fffbeb;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Sora', sans-serif;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-lg: 0 2px 8px rgba(0,0,0,0.08), 0 16px 48px rgba(0,0,0,0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── TOPBAR ─────────────────────────────────────── */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(248,248,246,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    height: 56px;
+    display: flex; align-items: center;
+    padding: 0 24px;
+    gap: 8px;
+  }
+
+  .topbar-logo {
+    font-weight: 700; font-size: 15px; letter-spacing: -0.3px;
+    margin-right: auto;
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer;
+  }
+
+  .logo-icon {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 14px;
+  }
+
+  .nav-btn {
+    padding: 6px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    font-family: var(--sans);
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .nav-btn:hover { color: var(--text); background: rgba(0,0,0,0.04); }
+  .nav-btn.active { color: var(--text); background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+  .report-nav-btn {
+    margin-left: 8px;
+    padding: 6px 16px;
+    border-radius: 8px;
+    border: 1.5px solid var(--accent);
+    background: transparent;
+    font-family: var(--sans);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .report-nav-btn:hover { background: var(--accent); color: white; }
+
+  /* ─── PAGES ──────────────────────────────────────── */
+  .page {
+    display: none;
+    min-height: 100vh;
+    padding-top: 56px;
+  }
+  .page.active { display: block; }
+
+  /* ─── HOME PAGE ──────────────────────────────────── */
+  .hero {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 80px 24px 60px;
+    text-align: center;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    background: var(--accent-light);
+    border: 1px solid var(--accent-mid);
+    border-radius: 100px;
+    font-size: 12px; font-weight: 600; color: var(--accent);
+    letter-spacing: 0.5px; text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  .hero h1 {
+    font-size: clamp(36px, 6vw, 56px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    margin-bottom: 20px;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero p {
+    font-size: 17px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    max-width: 500px;
+    margin: 0 auto 40px;
+    font-weight: 300;
+  }
+
+  .hero-cta {
+    display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+  }
+
+  .btn-primary {
+    padding: 12px 28px;
+    background: var(--text);
+    color: white;
+    border: none; border-radius: 10px;
+    font-family: var(--sans); font-size: 15px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-primary:hover { background: #333; transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+
+  .btn-ghost {
+    padding: 12px 28px;
+    background: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-family: var(--sans); font-size: 15px; font-weight: 500;
+    cursor: pointer; text-decoration: none;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-ghost:hover { border-color: var(--text); transform: translateY(-1px); }
+
+  /* Stats strip */
+  .stats-strip {
+    display: flex; justify-content: center; gap: 0;
+    max-width: 600px; margin: 60px auto 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .stat-item {
+    flex: 1;
+    padding: 24px 20px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .stat-item:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: var(--mono);
+    font-size: 28px; font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .stat-label {
+    font-size: 12px; color: var(--text-muted);
+    font-weight: 500; margin-top: 4px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  /* How it works */
+  .section {
+    max-width: 800px; margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  .section-title {
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .step-num {
+    width: 32px; height: 32px;
+    background: var(--text);
+    color: white;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 13px; font-weight: 500;
+    margin-bottom: 16px;
+  }
+
+  .step-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .step-card p { font-size: 13.5px; color: var(--text-muted); line-height: 1.55; }
+
+  /* Recent entries */
+  .recent-section {
+    max-width: 800px; margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ─── LOOKUP PAGE ────────────────────────────────── */
+  .lookup-wrap {
+    max-width: 480px; margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  .lookup-title {
+    font-size: 26px; font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .lookup-sub {
+    font-size: 14px; color: var(--text-muted);
+    margin-bottom: 32px;
+  }
+
+  /* Display */
+  .phone-display {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    min-height: 72px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: var(--shadow);
+  }
+
+  .phone-display-num {
+    font-family: var(--mono);
+    font-size: 26px; font-weight: 500;
+    letter-spacing: 1px;
+    color: var(--text);
+    flex: 1;
+    min-height: 36px;
+    display: flex; align-items: center;
+  }
+  .phone-display-num.placeholder { color: var(--text-muted); font-size: 18px; }
+
+  .display-backspace {
+    width: 36px; height: 36px;
+    border: none; background: transparent;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text-muted);
+    font-size: 18px;
+    transition: all 0.1s;
+  }
+  .display-backspace:hover { background: var(--accent-light); color: var(--accent); }
+
+  /* Dialpad */
+  .dialpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .dial-key {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.1s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    user-select: none;
+  }
+  .dial-key:hover { border-color: #ccc; transform: translateY(-1px); box-shadow: var(--shadow); }
+  .dial-key:active { transform: scale(0.96); background: var(--bg); }
+
+  .dial-key-num {
+    font-family: var(--mono);
+    font-size: 22px; font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .dial-key-sub {
+    font-size: 8px;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    margin-top: 3px;
+    text-transform: uppercase;
+  }
+
+  .dial-key.special { background: var(--bg); }
+
+  .search-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--text);
+    color: white;
+    border: none; border-radius: 10px;
+    font-family: var(--sans); font-size: 15px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 12px;
+  }
+  .search-btn:hover { background: #333; }
+  .search-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+  /* Manual input */
+  .manual-input-wrap {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 20px;
+  }
+  .manual-toggle {
+    font-size: 12px; color: var(--text-muted);
+    cursor: pointer; background: none; border: none;
+    font-family: var(--sans);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    padding: 0;
+  }
+  .manual-toggle:hover { color: var(--text); }
+
+  .manual-field {
+    width: 100%;
+    padding: 11px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: var(--mono); font-size: 15px;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+    margin-bottom: 12px;
+    display: none;
+  }
+  .manual-field:focus { border-color: var(--text); }
+  .manual-field.visible { display: block; }
+
+  /* ─── RESULT CARD ────────────────────────────────── */
+  #result-area { margin-top: 24px; }
+
+  .result-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-header {
+    padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .result-status-flagged { background: #fff5f5; }
+  .result-status-clean   { background: #f0fdf5; }
+  .result-status-expired { background: var(--amber-light); }
+  .result-status-unknown { background: var(--bg); }
+
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 100px;
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .badge-danger  { background: var(--accent-mid); color: #c0222e; }
+  .badge-safe    { background: #c3f0d8; color: #1a6b3e; }
+  .badge-expired { background: #fde68a; color: #92400e; }
+  .badge-unknown { background: var(--border); color: var(--text-muted); }
+
+  .status-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    display: inline-block;
+  }
+  .dot-danger  { background: var(--accent); animation: pulse 1.5s infinite; }
+  .dot-safe    { background: var(--green); }
+  .dot-expired { background: var(--amber); }
+  .dot-unknown { background: #aaa; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .result-phone {
+    font-family: var(--mono);
+    font-size: 20px; font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  .result-body { padding: 20px 24px; }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .result-field label {
+    font-size: 11px; font-weight: 600;
+    color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+    display: block; margin-bottom: 4px;
+  }
+  .result-field .val {
+    font-size: 14px; font-weight: 500;
+    font-family: var(--mono);
+  }
+
+  .risk-high   { color: var(--accent); }
+  .risk-medium { color: var(--amber); }
+  .risk-low    { color: var(--green); }
+
+  .notes-section {
+    border-top: 1px solid var(--border);
+    padding-top: 16px; margin-top: 4px;
+  }
+  .notes-label {
+    font-size: 11px; font-weight: 600;
+    color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .note-item {
+    font-size: 13.5px; color: var(--text);
+    display: flex; gap: 8px; align-items: baseline;
+    margin-bottom: 5px;
+  }
+  .note-item::before { content: '—'; color: var(--text-muted); flex-shrink: 0; }
+
+  .tags-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 12px;
+  }
+  .tag {
+    padding: 3px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 11.5px; font-weight: 500;
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+
+  .result-footer {
+    border-top: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .result-footer-note {
+    font-size: 12px; color: var(--text-muted);
+  }
+  .report-link-sm {
+    font-size: 13px; font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .report-link-sm:hover { text-decoration: underline; }
+
+  .not-found-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 36px 24px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    animation: slideUp 0.3s ease;
+  }
+  .not-found-icon {
+    font-size: 36px; margin-bottom: 12px;
+  }
+  .not-found-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .not-found-card p { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; }
+
+  /* ─── REPORT BANNER ──────────────────────────────── */
+  .report-banner {
+    background: var(--accent);
+    color: white;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 24px;
+    gap: 16px;
+  }
+  .report-banner p { font-size: 14px; line-height: 1.5; opacity: 0.92; }
+  .report-banner strong { font-size: 15px; display: block; margin-bottom: 3px; }
+  .btn-report {
+    padding: 10px 20px;
+    background: white;
+    color: var(--accent);
+    border: none; border-radius: 8px;
+    font-family: var(--sans); font-size: 14px; font-weight: 700;
+    cursor: pointer; text-decoration: none; white-space: nowrap;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .btn-report:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+  /* ─── RECENT TABLE ───────────────────────────────── */
+  .entry-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    font-size: 13.5px;
+  }
+  .entry-table th {
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 11px; font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .entry-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .entry-table tr:last-child td { border-bottom: none; }
+  .entry-table tr:hover td { background: var(--bg); }
+  .entry-table .mono { font-family: var(--mono); }
+
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 11px; font-weight: 600;
+  }
+  .pill-high   { background: var(--accent-mid); color: #c0222e; }
+  .pill-medium { background: #fde68a; color: #92400e; }
+  .pill-low    { background: #c3f0d8; color: #1a6b3e; }
+
+  /* ─── LOADING ────────────────────────────────────── */
+  .loading-ring {
+    width: 20px; height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── RESPONSIVE ─────────────────────────────────── */
+  @media (max-width: 500px) {
+    .result-grid { grid-template-columns: 1fr; }
+    .stats-strip { flex-direction: column; }
+    .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+    .stat-item:last-child { border-bottom: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── TOPBAR ─────────────────────────────────────── -->
+<nav class="topbar">
+  <div class="topbar-logo" onclick="showPage('home')">
+    <div class="logo-icon">🛡</div>
+    ScamShield
+  </div>
+  <button class="nav-btn active" id="nav-home" onclick="showPage('home')">Home</button>
+  <button class="nav-btn" id="nav-lookup" onclick="showPage('lookup')">Lookup</button>
+  <a href="https://forms.gle/av9o4T1aUM9Wcyw78" target="_blank" class="report-nav-btn">
+    ⚑ Report
+  </a>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════
+     HOME PAGE
+════════════════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+
+  <div class="hero">
+    <div class="hero-badge">🛡 Community-Powered Protection</div>
+    <h1>Stop Scam Calls<br><span>Before They Strike</span></h1>
+    <p>Search our database of known scam numbers. Check before you answer — protect yourself and others from fraud.</p>
+    <div class="hero-cta">
+      <button class="btn-primary" onclick="showPage('lookup')">
+        🔍 Look Up a Number
+      </button>
+      <a href="https://forms.gle/av9o4T1aUM9Wcyw78" target="_blank" class="btn-ghost">
+        ⚑ Report a Number
+      </a>
+    </div>
+  </div>
+
+  <div class="stats-strip" id="stats-strip">
+    <div class="stat-item">
+      <div class="stat-num" id="stat-total">—</div>
+      <div class="stat-label">Numbers Tracked</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="stat-active">—</div>
+      <div class="stat-label">Active Threats</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="stat-reports">—</div>
+      <div class="stat-label">Total Reports</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 72px;">
+    <div class="section">
+      <div class="section-title">How It Works</div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <h3>Enter the Number</h3>
+          <p>Type or dial the phone number you received a suspicious call from.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <h3>Instant Check</h3>
+          <p>We search our database of reported scam numbers in real-time.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <h3>See the Details</h3>
+          <p>Get risk level, category, reports, and notes from the community.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">04</div>
+          <h3>Report New Ones</h3>
+          <p>Didn't find it? Submit it so others can stay safe too.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="recent-section">
+      <div class="section-title">Recent Entries</div>
+      <table class="entry-table" id="recent-table">
+        <thead>
+          <tr>
+            <th>Number</th>
+            <th>Category</th>
+            <th>Risk</th>
+            <th>Reports</th>
+            <th>Date Added</th>
+          </tr>
+        </thead>
+        <tbody id="recent-tbody">
+          <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">Loading database…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     LOOKUP PAGE
+════════════════════════════════════════════════════ -->
+<div class="page" id="page-lookup">
+  <div class="lookup-wrap">
+    <div class="lookup-title">Number Lookup</div>
+    <div class="lookup-sub">Enter a phone number to check it against our scam database</div>
+
+    <!-- Display -->
+    <div class="phone-display">
+      <div class="phone-display-num placeholder" id="phone-display">Enter number…</div>
+      <button class="display-backspace" onclick="backspace()" title="Backspace">⌫</button>
+    </div>
+
+    <!-- Dialpad -->
+    <div class="dialpad">
+      <div class="dial-key" onclick="pressKey('1')"><div class="dial-key-num">1</div><div class="dial-key-sub">&nbsp;</div></div>
+      <div class="dial-key" onclick="pressKey('2')"><div class="dial-key-num">2</div><div class="dial-key-sub">ABC</div></div>
+      <div class="dial-key" onclick="pressKey('3')"><div class="dial-key-num">3</div><div class="dial-key-sub">DEF</div></div>
+      <div class="dial-key" onclick="pressKey('4')"><div class="dial-key-num">4</div><div class="dial-key-sub">GHI</div></div>
+      <div class="dial-key" onclick="pressKey('5')"><div class="dial-key-num">5</div><div class="dial-key-sub">JKL</div></div>
+      <div class="dial-key" onclick="pressKey('6')"><div class="dial-key-num">6</div><div class="dial-key-sub">MNO</div></div>
+      <div class="dial-key" onclick="pressKey('7')"><div class="dial-key-num">7</div><div class="dial-key-sub">PQRS</div></div>
+      <div class="dial-key" onclick="pressKey('8')"><div class="dial-key-num">8</div><div class="dial-key-sub">TUV</div></div>
+      <div class="dial-key" onclick="pressKey('9')"><div class="dial-key-num">9</div><div class="dial-key-sub">WXYZ</div></div>
+      <div class="dial-key special" onclick="pressKey('+')"><div class="dial-key-num" style="font-size:18px">+</div><div class="dial-key-sub">&nbsp;</div></div>
+      <div class="dial-key" onclick="pressKey('0')"><div class="dial-key-num">0</div><div class="dial-key-sub">+</div></div>
+      <div class="dial-key special" onclick="pressKey('#')"><div class="dial-key-num" style="font-size:18px">#</div><div class="dial-key-sub">&nbsp;</div></div>
+    </div>
+
+    <button class="search-btn" id="search-btn" onclick="doSearch()">Search</button>
+
+    <!-- Manual input toggle -->
+    <div style="text-align:center; margin-bottom: 20px;">
+      <button class="manual-toggle" onclick="toggleManual()">✏ Type manually instead</button>
+    </div>
+    <input class="manual-field" id="manual-field" type="tel"
+           placeholder="+1 800-555-0100"
+           oninput="onManualInput(this.value)"
+           onkeydown="if(event.key==='Enter') doSearch()">
+
+    <!-- Result -->
+    <div id="result-area"></div>
+
+    <!-- Report Banner -->
+    <div class="report-banner">
+      <div>
+        <strong>Found a scam number?</strong>
+        <p>Help protect others by submitting it to our database.</p>
+      </div>
+      <a href="https://forms.gle/av9o4T1aUM9Wcyw78" target="_blank" class="btn-report">Report Now</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  ⚙ CONFIG — edit EXPIRY_DAYS to change how long a number
+//  stays flagged after its date_added timestamp.
+//  Default: 365 days
+// ══════════════════════════════════════════════════════════════
+const EXPIRY_DAYS = 365;
+
+// ─── State ────────────────────────────────────────────────────
+let dialInput = '';
+let dbData = null;
+let manualVisible = false;
+
+// ─── DB fetch (loads ScamDB.db from the repo) ─────────────────
+async function loadDB() {
+  try {
+    const res = await fetch('ScamDB.db');
+    if (!res.ok) throw new Error('not found');
+    const text = await res.text().catch(() => null);
+
+    // Try to parse as JSON array or newline-delimited JSON
+    let entries = [];
+    if (text) {
+      const trimmed = text.trim();
+      if (trimmed.startsWith('[')) {
+        entries = JSON.parse(trimmed);
+      } else {
+        // Newline-delimited JSON (one object per line)
+        entries = trimmed.split('\n')
+          .filter(l => l.trim())
+          .map(l => JSON.parse(l));
+      }
+    }
+    dbData = entries;
+    renderStats();
+    renderRecentTable();
+  } catch (e) {
+    // If no DB yet, use demo data so the UI isn't empty
+    dbData = [
+      {
+        "phone_number": "+18338084815",
+        "display_number": "+1 833-808-4815",
+        "category": "tax_relief_scam",
+        "risk_level": "high",
+        "status": "active",
+        "date_added": "2026-05-15T18:42:00Z",
+        "reports": 1,
+        "country": "US",
+        "notes": ["Automated tax relief robocall", "Claims IRS debt reduction"],
+        "tags": ["robocall", "spoofed", "tax scam"]
+      }
+    ];
+    renderStats();
+    renderRecentTable();
+  }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────
+function isExpired(entry) {
+  if (!entry.date_added) return false;
+  const added = new Date(entry.date_added);
+  const expiryMs = EXPIRY_DAYS * 24 * 60 * 60 * 1000;
+  return (Date.now() - added.getTime()) > expiryMs;
+}
+
+function normalizePhone(raw) {
+  // Strip everything except digits and leading +
+  return raw.replace(/[^\d+]/g, '');
+}
+
+function lookupNumber(raw) {
+  if (!dbData) return null;
+  const needle = normalizePhone(raw);
+  return dbData.find(e => normalizePhone(e.phone_number) === needle) || null;
+}
+
+function formatCategory(cat) {
+  if (!cat) return '—';
+  return cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+}
+
+function daysUntilExpiry(entry) {
+  if (!entry.date_added) return null;
+  const added = new Date(entry.date_added);
+  const expiryDate = new Date(added.getTime() + EXPIRY_DAYS * 86400000);
+  const remaining = Math.ceil((expiryDate - Date.now()) / 86400000);
+  return remaining;
+}
+
+// ─── Stats ────────────────────────────────────────────────────
+function renderStats() {
+  if (!dbData) return;
+  const total = dbData.length;
+  const active = dbData.filter(e => !isExpired(e)).length;
+  const reports = dbData.reduce((s, e) => s + (e.reports || 0), 0);
+  document.getElementById('stat-total').textContent = total.toLocaleString();
+  document.getElementById('stat-active').textContent = active.toLocaleString();
+  document.getElementById('stat-reports').textContent = reports.toLocaleString();
+}
+
+// ─── Recent table ─────────────────────────────────────────────
+function renderRecentTable() {
+  const tbody = document.getElementById('recent-tbody');
+  if (!dbData || !dbData.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">No entries found.</td></tr>';
+    return;
+  }
+  const sorted = [...dbData].sort((a,b) => new Date(b.date_added) - new Date(a.date_added)).slice(0, 10);
+  tbody.innerHTML = sorted.map(e => {
+    const exp = isExpired(e);
+    const riskClass = { high:'pill-high', medium:'pill-medium', low:'pill-low' }[e.risk_level] || '';
+    return `<tr>
+      <td class="mono">${e.display_number || e.phone_number}</td>
+      <td>${formatCategory(e.category)}</td>
+      <td><span class="pill ${riskClass}">${e.risk_level || '—'}</span></td>
+      <td>${e.reports || 0}</td>
+      <td style="color:var(--text-muted)">${formatDate(e.date_added)}${exp ? ' <span style="color:var(--amber);font-size:11px">(exp)</span>' : ''}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── Nav / page switching ─────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ─── Dialpad ──────────────────────────────────────────────────
+function pressKey(k) {
+  // Max digits: allow + only at start, cap at 15 digits
+  const digits = dialInput.replace(/\D/g, '');
+  if (k === '+') {
+    if (dialInput.length === 0) dialInput = '+';
+  } else if (k === '#' || digits.length < 15) {
+    dialInput += k;
+  }
+  updateDisplay();
+  // Sync manual field
+  document.getElementById('manual-field').value = dialInput;
+}
+
+function backspace() {
+  dialInput = dialInput.slice(0, -1);
+  updateDisplay();
+  document.getElementById('manual-field').value = dialInput;
+}
+
+function updateDisplay() {
+  const el = document.getElementById('phone-display');
+  if (dialInput) {
+    el.textContent = dialInput;
+    el.classList.remove('placeholder');
+  } else {
+    el.textContent = 'Enter number…';
+    el.classList.add('placeholder');
+  }
+}
+
+function toggleManual() {
+  manualVisible = !manualVisible;
+  const f = document.getElementById('manual-field');
+  f.classList.toggle('visible', manualVisible);
+  if (manualVisible) f.focus();
+}
+
+function onManualInput(val) {
+  dialInput = val;
+  updateDisplay();
+}
+
+// ─── Search ───────────────────────────────────────────────────
+function doSearch() {
+  const query = dialInput.trim();
+  if (!query || query.replace(/\D/g,'').length < 7) return;
+
+  const btn = document.getElementById('search-btn');
+  btn.innerHTML = '<span class="loading-ring"></span>';
+  btn.disabled = true;
+
+  // Small delay for polish
+  setTimeout(() => {
+    btn.innerHTML = 'Search';
+    btn.disabled = false;
+    const entry = lookupNumber(query);
+    renderResult(query, entry);
+  }, 400);
+}
+
+function renderResult(query, entry) {
+  const area = document.getElementById('result-area');
+
+  if (!entry) {
+    area.innerHTML = `
+      <div class="not-found-card">
+        <div class="not-found-icon">✅</div>
+        <h3>Not Found in Database</h3>
+        <p>The number <strong style="font-family:var(--mono)">${query}</strong> isn't in our database.
+        That's a good sign — but if you received a suspicious call, please report it.</p>
+        <a href="https://forms.gle/av9o4T1aUM9Wcyw78" target="_blank" class="btn-primary" style="margin:0 auto;display:inline-flex">
+          ⚑ Report This Number
+        </a>
+      </div>`;
+    return;
+  }
+
+  const expired = isExpired(entry);
+  const remaining = daysUntilExpiry(entry);
+
+  let statusClass, badgeClass, dotClass, statusLabel;
+  if (expired) {
+    statusClass = 'result-status-expired';
+    badgeClass  = 'badge-expired';
+    dotClass    = 'dot-expired';
+    statusLabel = 'Expired Record';
+  } else {
+    statusClass = 'result-status-flagged';
+    badgeClass  = 'badge-danger';
+    dotClass    = 'dot-danger';
+    statusLabel = 'Flagged';
+  }
+
+  const riskClass = { high:'risk-high', medium:'risk-medium', low:'risk-low' }[entry.risk_level] || '';
+
+  const notesHtml = (entry.notes || []).map(n =>
+    `<div class="note-item">${n}</div>`).join('');
+
+  const tagsHtml = (entry.tags || []).map(t =>
+    `<span class="tag">${t}</span>`).join('');
+
+  const expiryNote = expired
+    ? `<span style="color:var(--amber)">Record expired — may no longer be active</span>`
+    : remaining !== null
+      ? `<span>Expires in <strong>${remaining}</strong> day${remaining !== 1 ? 's' : ''}</span>`
+      : '';
+
+  area.innerHTML = `
+    <div class="result-card">
+      <div class="result-header ${statusClass}">
+        <div class="result-phone">${entry.display_number || entry.phone_number}</div>
+        <span class="status-badge ${badgeClass}">
+          <span class="status-dot ${dotClass}"></span>
+          ${statusLabel}
+        </span>
+      </div>
+      <div class="result-body">
+        <div class="result-grid">
+          <div class="result-field">
+            <label>Category</label>
+            <div class="val">${formatCategory(entry.category)}</div>
+          </div>
+          <div class="result-field">
+            <label>Risk Level</label>
+            <div class="val ${riskClass}">${entry.risk_level ? entry.risk_level.toUpperCase() : '—'}</div>
+          </div>
+          <div class="result-field">
+            <label>Status</label>
+            <div class="val">${entry.status || '—'}</div>
+          </div>
+          <div class="result-field">
+            <label>Reports</label>
+            <div class="val">${entry.reports || 0}</div>
+          </div>
+          <div class="result-field">
+            <label>Country</label>
+            <div class="val">${entry.country || '—'}</div>
+          </div>
+          <div class="result-field">
+            <label>Date Added</label>
+            <div class="val">${formatDate(entry.date_added)}</div>
+          </div>
+        </div>
+        ${notesHtml || tagsHtml ? `
+        <div class="notes-section">
+          ${notesHtml ? `<div class="notes-label">Notes</div>${notesHtml}` : ''}
+          ${tagsHtml ? `<div class="tags-row">${tagsHtml}</div>` : ''}
+        </div>` : ''}
+      </div>
+      <div class="result-footer">
+        <div class="result-footer-note">${expiryNote}</div>
+        <a href="https://forms.gle/av9o4T1aUM9Wcyw78" target="_blank" class="report-link-sm">
+          ⚑ Add a Report
+        </a>
+      </div>
+    </div>`;
+}
+
+// ─── Init ─────────────────────────────────────────────────────
+loadDB();
+</script>
+</body>
+</html>

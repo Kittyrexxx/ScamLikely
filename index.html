@@ -592,6 +592,84 @@
   .pill-medium { background: #fde68a; color: #92400e; }
   .pill-low    { background: #c3f0d8; color: #1a6b3e; }
 
+  /* ─── DB ERROR POPUP ────────────────────────────── */
+  .db-error-overlay {
+    position: fixed; inset: 0; z-index: 999;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .db-error-box {
+    background: var(--surface);
+    border: 1.5px solid var(--accent-mid);
+    border-radius: 16px;
+    padding: 36px 32px;
+    max-width: 420px; width: 100%;
+    box-shadow: 0 8px 40px rgba(230,57,70,0.15), var(--shadow-lg);
+    text-align: center;
+    animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.88); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .db-error-icon {
+    width: 56px; height: 56px;
+    background: var(--accent-light);
+    border: 2px solid var(--accent-mid);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    margin: 0 auto 20px;
+  }
+
+  .db-error-box h2 {
+    font-size: 18px; font-weight: 700;
+    margin-bottom: 10px; letter-spacing: -0.3px;
+  }
+
+  .db-error-box p {
+    font-size: 14px; color: var(--text-muted);
+    line-height: 1.6; margin-bottom: 8px;
+  }
+
+  .db-error-code {
+    display: inline-block;
+    margin: 12px 0 20px;
+    padding: 8px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--mono); font-size: 12px;
+    color: var(--accent);
+  }
+
+  .db-error-dismiss {
+    padding: 10px 24px;
+    background: var(--accent);
+    color: white; border: none; border-radius: 8px;
+    font-family: var(--sans); font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .db-error-dismiss:hover { background: #c8303b; }
+
+  /* disabled lookup state */
+  .lookup-disabled-banner {
+    background: var(--accent-light);
+    border: 1.5px solid var(--accent-mid);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+    font-size: 13.5px; color: #c0222e; font-weight: 500;
+  }
+  .lookup-disabled-banner .icon { font-size: 18px; flex-shrink: 0; }
+
   /* ─── LOADING ────────────────────────────────────── */
   .loading-ring {
     width: 20px; height: 20px;
@@ -617,8 +695,8 @@
 <!-- ─── TOPBAR ─────────────────────────────────────── -->
 <nav class="topbar">
   <div class="topbar-logo" onclick="showPage('home')">
-    <div class="logo-icon">🛡</div>
-    ScamShield
+    <div class="logo-icon">📵</div>
+    Scam Likely
   </div>
   <button class="nav-btn active" id="nav-home" onclick="showPage('home')">Home</button>
   <button class="nav-btn" id="nav-lookup" onclick="showPage('lookup')">Lookup</button>
@@ -765,6 +843,18 @@
   </div>
 </div>
 
+<!-- ─── DB ERROR POPUP ──────────────────────────────── -->
+<div class="db-error-overlay" id="db-error-overlay" style="display:none">
+  <div class="db-error-box">
+    <div class="db-error-icon">⚠️</div>
+    <h2>Database Unavailable</h2>
+    <p>We couldn't load <strong>ScamDB.db</strong> from the repository. The lookup feature has been disabled until the file is available.</p>
+    <div class="db-error-code" id="db-error-detail">Failed to fetch: ScamDB.db</div>
+    <p style="font-size:12px;margin-bottom:20px">Make sure <code style="font-family:var(--mono);background:var(--bg);padding:2px 5px;border-radius:4px">ScamDB.db</code> is committed to the root of your GitHub Pages repo.</p>
+    <button class="db-error-dismiss" onclick="dismissDbError()">Got it</button>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════════════════════════════
 //  ⚙ CONFIG — edit EXPIRY_DAYS to change how long a number
@@ -776,50 +866,80 @@ const EXPIRY_DAYS = 365;
 // ─── State ────────────────────────────────────────────────────
 let dialInput = '';
 let dbData = null;
+let dbLoaded = false;
 let manualVisible = false;
 
-// ─── DB fetch (loads ScamDB.db from the repo) ─────────────────
+// ─── Number normalization ─────────────────────────────────────
+// Strips EVERYTHING except digits, then strips any leading country
+// code so "18338084815", "8338084815", "+18338084815", "833-808-4815"
+// all match the same record.
+function digitsOnly(raw) {
+  return String(raw).replace(/\D/g, '');
+}
+
+// Returns just the "local" digits — strips a leading 1 (US/CA) or
+// other single-digit country codes if the result is ≥10 digits.
+// We index the DB by local digits so any input format finds the match.
+function localDigits(raw) {
+  let d = digitsOnly(raw);
+  // If 11 digits and starts with 1, strip the country code
+  if (d.length === 11 && d[0] === '1') d = d.slice(1);
+  // Generic: if >10 digits, strip leading digits down to 10
+  if (d.length > 10) d = d.slice(d.length - 10);
+  return d;
+}
+
+// ─── DB fetch ─────────────────────────────────────────────────
 async function loadDB() {
   try {
     const res = await fetch('ScamDB.db');
-    if (!res.ok) throw new Error('not found');
-    const text = await res.text().catch(() => null);
-
-    // Try to parse as JSON array or newline-delimited JSON
+    if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
+    const text = await res.text();
+    const trimmed = text.trim();
     let entries = [];
-    if (text) {
-      const trimmed = text.trim();
-      if (trimmed.startsWith('[')) {
-        entries = JSON.parse(trimmed);
-      } else {
-        // Newline-delimited JSON (one object per line)
-        entries = trimmed.split('\n')
-          .filter(l => l.trim())
-          .map(l => JSON.parse(l));
-      }
+    if (trimmed.startsWith('[')) {
+      entries = JSON.parse(trimmed);
+    } else {
+      entries = trimmed.split('\n').filter(l => l.trim()).map(l => JSON.parse(l));
     }
     dbData = entries;
+    dbLoaded = true;
     renderStats();
     renderRecentTable();
   } catch (e) {
-    // If no DB yet, use demo data so the UI isn't empty
-    dbData = [
-      {
-        "phone_number": "+18338084815",
-        "display_number": "+1 833-808-4815",
-        "category": "tax_relief_scam",
-        "risk_level": "high",
-        "status": "active",
-        "date_added": "2026-05-15T18:42:00Z",
-        "reports": 1,
-        "country": "US",
-        "notes": ["Automated tax relief robocall", "Claims IRS debt reduction"],
-        "tags": ["robocall", "spoofed", "tax scam"]
-      }
-    ];
-    renderStats();
-    renderRecentTable();
+    showDbError(e.message || 'Could not fetch ScamDB.db');
   }
+}
+
+// ─── DB error UI ─────────────────────────────────────────────
+function showDbError(msg) {
+  document.getElementById('db-error-detail').textContent = msg;
+  document.getElementById('db-error-overlay').style.display = 'flex';
+  disableLookup();
+}
+
+function dismissDbError() {
+  document.getElementById('db-error-overlay').style.display = 'none';
+}
+
+function disableLookup() {
+  // Insert a banner at the top of the lookup page
+  const wrap = document.querySelector('.lookup-wrap');
+  if (!wrap.querySelector('.lookup-disabled-banner')) {
+    const banner = document.createElement('div');
+    banner.className = 'lookup-disabled-banner';
+    banner.innerHTML = `<span class="icon">🚫</span><span><strong>Lookup unavailable</strong> — ScamDB.db could not be loaded. Check that the file exists in your repo.</span>`;
+    wrap.insertBefore(banner, wrap.firstChild);
+  }
+  const btn = document.getElementById('search-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Database Unavailable'; }
+  // Grey out dialpad keys
+  document.querySelectorAll('.dial-key').forEach(k => {
+    k.style.opacity = '0.4';
+    k.style.pointerEvents = 'none';
+  });
+  document.querySelector('.display-backspace').style.opacity = '0.4';
+  document.querySelector('.display-backspace').style.pointerEvents = 'none';
 }
 
 // ─── Helpers ──────────────────────────────────────────────────
@@ -830,15 +950,12 @@ function isExpired(entry) {
   return (Date.now() - added.getTime()) > expiryMs;
 }
 
-function normalizePhone(raw) {
-  // Strip everything except digits and leading +
-  return raw.replace(/[^\d+]/g, '');
-}
-
+// ─── Lookup — fuzzy match (ignores country code, dashes, spaces) ──
 function lookupNumber(raw) {
   if (!dbData) return null;
-  const needle = normalizePhone(raw);
-  return dbData.find(e => normalizePhone(e.phone_number) === needle) || null;
+  const needle = localDigits(raw);
+  if (needle.length < 7) return null;
+  return dbData.find(e => localDigits(e.phone_number) === needle) || null;
 }
 
 function formatCategory(cat) {
@@ -945,8 +1062,9 @@ function onManualInput(val) {
 
 // ─── Search ───────────────────────────────────────────────────
 function doSearch() {
+  if (!dbLoaded) return;
   const query = dialInput.trim();
-  if (!query || query.replace(/\D/g,'').length < 7) return;
+  if (!query || digitsOnly(query).length < 7) return;
 
   const btn = document.getElementById('search-btn');
   btn.innerHTML = '<span class="loading-ring"></span>';

@@ -898,9 +898,31 @@ async function loadDB() {
     const trimmed = text.trim();
     let entries = [];
     if (trimmed.startsWith('[')) {
+      // Standard JSON array
       entries = JSON.parse(trimmed);
+    } else if (trimmed.startsWith('{')) {
+      // Multi-line NDJSON: split on boundaries between objects (closing } then whitespace then {)
+      const chunks = trimmed.split(/\}\s*\n\s*\{/).map((chunk, i, arr) => {
+        // Re-attach the braces that were split off
+        if (arr.length === 1) return chunk;
+        if (i === 0)               return chunk + '}';
+        if (i === arr.length - 1)  return '{' + chunk;
+        return '{' + chunk + '}';
+      });
+      entries = chunks.map((chunk, i) => {
+        try {
+          return JSON.parse(chunk);
+        } catch (e) {
+          console.warn(`ScamDB: skipping malformed entry #${i + 1}:`, e.message);
+          return null;
+        }
+      }).filter(Boolean);
     } else {
-      entries = trimmed.split('\n').filter(l => l.trim()).map(l => JSON.parse(l));
+      // Single-object-per-line NDJSON
+      entries = trimmed.split('\n').filter(l => l.trim()).map((l, i) => {
+        try { return JSON.parse(l); }
+        catch (e) { console.warn(`ScamDB: skipping line ${i + 1}:`, e.message); return null; }
+      }).filter(Boolean);
     }
     dbData = entries;
     dbLoaded = true;

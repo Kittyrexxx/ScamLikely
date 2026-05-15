@@ -1,0 +1,75 @@
+{
+  "phone_number": "+18338084815",
+  "display_number": "+1 833-808-4815",
+  "category": "tax_relief_scam",
+  "risk_level": "high",
+  "status": "active",
+  "date_added": "2026-05-15T18:42:00Z",
+  "reports": 1,
+  "country": "US",
+  "notes": [
+    "Automated tax relief robocall",
+    "Calls with new numbers"
+  ],
+  "tags": [
+    "robocall",
+    "tax scam"
+  ]
+}
+
+{
+  "phone_number": "+18776062492",
+  "display_number": "+1 877-606-2492",
+  "category": "tax_relief_scam",
+  "risk_level": "high",
+  "status": "active",
+  "date_added": "2026-05-15T18:42:00Z",
+  "reports": 1,
+  "country": "US",
+  "notes": [
+    "Automated tax relief robocall",
+    "Calls with new numbers"
+  ],
+  "tags": [
+    "robocall",
+    "tax scam"
+  ]
+}
+
+{
+  "phone_number": "+18336797127",
+  "display_number": "+1 833-679-7127",
+  "category": "tax_relief_scam",
+  "risk_level": "high",
+  "status": "active",
+  "date_added": "2026-05-15T18:42:00Z",
+  "reports": 1,
+  "country": "US",
+  "notes": [
+    "Automated tax relief robocall",
+    "Calls with new numbers"
+  ],
+  "tags": [
+    "robocall",
+    "tax scam"
+  ]
+}
+
+{
+  "phone_number": "+18446212595",
+  "display_number": "+1 844-621-2595,
+  "category": "tax_relief_scam",
+  "risk_level": "high",
+  "status": "active",
+  "date_added": "2026-05-15T18:42:00Z",
+  "reports": 1,
+  "country": "US",
+  "notes": [
+    "Automated tax relief robocall",
+    "Calls with new numbers"
+  ],
+  "tags": [
+    "robocall",
+    "tax scam"
+  ]
+}

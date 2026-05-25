@@ -610,7 +610,7 @@ async function loadRecentTable() {
   try {
     const { data, error } = await sb
       .from('numbers')
-      .select('phone_number, category, risk_level, reports, date_added')
+      .select('phone_number, category, reports, date_added')
       .order('date_added', { ascending: false })
       .limit(10);
     if (error) throw error;
@@ -619,12 +619,13 @@ async function loadRecentTable() {
       return;
     }
     tbody.innerHTML = data.map(e => {
-      const exp = isExpired(e);
-      const rc  = { high:'pill-high', medium:'pill-medium', low:'pill-low' }[e.risk_level] || '';
+      const exp  = isExpired(e);
+      const risk = calcRisk(e.reports);
+      const rc   = { high:'pill-high', medium:'pill-medium', low:'pill-low' }[risk];
       return `<tr>
         <td class="mono">${e.phone_number}</td>
         <td>${formatCategory(e.category)}</td>
-        <td>${e.risk_level ? `<span class="pill ${rc}">${e.risk_level}</span>` : '—'}</td>
+        <td><span class="pill ${rc}">${risk}</span></td>
         <td>${e.reports || 0}</td>
         <td style="color:var(--text-muted)">${formatDate(e.date_added)}${exp ? ' <span style="color:var(--amber);font-size:11px">(exp)</span>' : ''}</td>
       </tr>`;
@@ -633,6 +634,15 @@ async function loadRecentTable() {
     console.error('Recent table error:', e);
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">Could not load entries.</td></tr>';
   }
+}
+
+// ─── Risk calculation (based on report count) ─────────────────
+// ⚙ Edit these thresholds to tune risk levels
+function calcRisk(reports) {
+  const n = reports || 0;
+  if (n >= 5)  return 'high';
+  if (n >= 2)  return 'medium';
+  return 'low';
 }
 
 // ─── Helpers ──────────────────────────────────────────────────
@@ -820,7 +830,7 @@ function renderResult(query, entry) {
   const badgeClass  = expired ? 'badge-expired' : 'badge-danger';
   const dotClass    = expired ? 'dot-expired' : 'dot-danger';
   const statusLabel = expired ? 'Expired Record' : 'Flagged';
-  const riskClass   = { high:'risk-high', medium:'risk-medium', low:'risk-low' }[entry.risk_level] || '';
+  const riskClass   = { high:'risk-high', medium:'risk-medium', low:'risk-low' }[calcRisk(entry.reports)];
 
   const notesHtml = (entry.notes || []).map(n => `<div class="note-item">${n}</div>`).join('');
   const tagsHtml  = (entry.tags  || []).map(t => `<span class="tag">${t}</span>`).join('');
@@ -842,7 +852,7 @@ function renderResult(query, entry) {
       <div class="result-body">
         <div class="result-grid">
           <div class="result-field"><label>Category</label><div class="val">${formatCategory(entry.category)}</div></div>
-          <div class="result-field"><label>Risk Level</label><div class="val ${riskClass}">${entry.risk_level ? entry.risk_level.toUpperCase() : '—'}</div></div>
+          <div class="result-field"><label>Risk Level</label><div class="val ${riskClass}">${calcRisk(entry.reports).toUpperCase()}</div></div>
           <div class="result-field"><label>Status</label><div class="val">${entry.status || '—'}</div></div>
           <div class="result-field"><label>Reports</label><div class="val" id="report-count-display">${entry.reports || 0}</div></div>
           <div class="result-field"><label>Country</label><div class="val">${entry.country || '—'}</div></div>

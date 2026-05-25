@@ -722,7 +722,7 @@ async function loadRecentTable() {
   try {
     const { data, error } = await sb
       .from('numbers')
-      .select('phone_number, category, reports, date_added')
+      .select('phone_number, category, reports, date_added, pretends_to_be')
       .order('date_added', { ascending: false })
       .limit(10);
     if (error) throw error;
@@ -736,7 +736,7 @@ async function loadRecentTable() {
       const rc   = { high:'pill-high', medium:'pill-medium', low:'pill-low' }[risk];
       return `<tr>
         <td class="mono">${e.phone_number}</td>
-        <td>${formatCategory(e.category)}</td>
+        <td>${formatCategory(e.category, e.pretends_to_be)}</td>
         <td><span class="pill ${rc}">${risk}</span></td>
         <td>${e.reports || 0}</td>
         <td style="color:var(--text-muted)">${formatDate(e.date_added)}${exp ? ' <span style="color:var(--amber);font-size:11px">(exp)</span>' : ''}</td>
@@ -767,7 +767,21 @@ function daysUntilExpiry(entry) {
   const exp = new Date(entry.date_added).getTime() + EXPIRY_DAYS * 86400000;
   return Math.ceil((exp - Date.now()) / 86400000);
 }
-function formatCategory(cat) {
+function formatCategory(cat, pretends) {
+  // Prefer pretends_to_be as the human-readable category label
+  const PRETEND_LABELS = {
+    irs:            'IRS / Tax Authority',
+    social_security:'Social Security',
+    medicare:       'Medicare',
+    bank:           'Bank / Credit Card',
+    tech_support:   'Tech Support',
+    utility:        'Utility Company',
+    police:         'Police / Sheriff',
+    publisher:      'Prize / Publisher',
+    insurance:      'Insurance',
+    other:          'Other',
+  };
+  if (pretends && pretends !== 'na' && PRETEND_LABELS[pretends]) return PRETEND_LABELS[pretends];
   if (!cat) return '—';
   return cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
@@ -819,6 +833,21 @@ function getChipVal(groupId) {
   const sel = document.querySelector(`#${groupId} .chip.selected`);
   return sel ? sel.dataset.val : null;
 }
+
+// ─── Map pretends_to_be → category ────────────────────────────
+const PRETEND_TO_CATEGORY = {
+  irs:            'tax_relief_scam',
+  social_security:'government_impersonation',
+  medicare:       'government_impersonation',
+  bank:           'financial_scam',
+  tech_support:   'tech_support_scam',
+  utility:        'utility_scam',
+  police:         'government_impersonation',
+  publisher:      'prize_scam',
+  insurance:      'insurance_scam',
+  other:          'unknown',
+  na:             'unknown'
+};
 
 async function submitReport() {
   const normalized  = _reportPhone;
@@ -1001,7 +1030,7 @@ function renderResult(query, entry) {
       </div>
       <div class="result-body">
         <div class="result-grid">
-          <div class="result-field"><label>Category</label><div class="val">${formatCategory(entry.category)}</div></div>
+          <div class="result-field"><label>Category</label><div class="val">${formatCategory(entry.category, entry.pretends_to_be)}</div></div>
           <div class="result-field"><label>Risk Level</label><div class="val ${riskClass}">${calcRisk(entry.reports).toUpperCase()}</div></div>
           <div class="result-field"><label>Status</label><div class="val">${entry.status || '—'}</div></div>
           <div class="result-field"><label>Reports</label><div class="val" id="report-count-display">${entry.reports || 0}</div></div>

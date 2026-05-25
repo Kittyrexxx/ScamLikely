@@ -357,6 +357,71 @@
   }
   .btn-report-banner:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 
+  /* ─── REPORT MODAL ────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px; animation: fadeIn 0.15s ease;
+  }
+  .modal-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 28px 28px 24px;
+    max-width: 440px; width: 100%;
+    box-shadow: var(--shadow-lg);
+    animation: popIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .modal-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .modal-header h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+  .modal-num {
+    font-family: var(--mono); font-size: 13px; color: var(--text-muted);
+    margin-top: 3px;
+  }
+  .modal-close {
+    width: 28px; height: 28px; border: none; background: var(--bg);
+    border-radius: 6px; cursor: pointer; font-size: 16px; color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: all 0.1s;
+  }
+  .modal-close:hover { background: var(--border); color: var(--text); }
+
+  .modal-q { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: var(--text); }
+
+  .chip-group { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 20px; }
+  .chip {
+    padding: 6px 13px; border-radius: 100px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    font-family: var(--sans); font-size: 12.5px; font-weight: 500;
+    color: var(--text-muted); cursor: pointer; transition: all 0.12s;
+    user-select: none;
+  }
+  .chip:hover { border-color: var(--text); color: var(--text); }
+  .chip.selected {
+    border-color: var(--text); background: var(--text); color: white;
+  }
+  .chip.na { border-style: dashed; }
+  .chip.na.selected { background: var(--text-muted); border-color: var(--text-muted); color: white; }
+
+  .modal-footer { display: flex; gap: 10px; margin-top: 4px; }
+  .modal-submit {
+    flex: 1; padding: 12px; background: var(--accent); color: white;
+    border: none; border-radius: 10px;
+    font-family: var(--sans); font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .modal-submit:hover { background: #c8303b; }
+  .modal-submit:disabled { background: var(--green); cursor: default; }
+  .modal-cancel {
+    padding: 12px 18px; background: var(--bg); color: var(--text-muted);
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-family: var(--sans); font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .modal-cancel:hover { border-color: var(--text); color: var(--text); }
+
   /* ─── DB ERROR POPUP ──────────────────────────────────── */
   .db-error-overlay {
     position: fixed; inset: 0; z-index: 999;
@@ -532,6 +597,53 @@
   </div>
 </div>
 
+<!-- ─── REPORT MODAL ───────────────────────────────────────── -->
+<div class="modal-overlay" id="report-modal" style="display:none" onclick="if(event.target===this)closeReportModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <h3>Report a Number</h3>
+        <div class="modal-num" id="modal-phone-label"></div>
+      </div>
+      <button class="modal-close" onclick="closeReportModal()">✕</button>
+    </div>
+
+    <div class="modal-q">Who did they pretend to be?</div>
+    <div class="chip-group" id="chips-pretend">
+      <div class="chip" data-val="irs">IRS / Tax Authority</div>
+      <div class="chip" data-val="social_security">Social Security</div>
+      <div class="chip" data-val="medicare">Medicare</div>
+      <div class="chip" data-val="bank">Bank / Credit Card</div>
+      <div class="chip" data-val="tech_support">Tech Support</div>
+      <div class="chip" data-val="utility">Utility Company</div>
+      <div class="chip" data-val="police">Police / Sheriff</div>
+      <div class="chip" data-val="publisher">Prize / Publisher</div>
+      <div class="chip" data-val="insurance">Insurance</div>
+      <div class="chip" data-val="other">Other</div>
+      <div class="chip na" data-val="na">Not Applicable</div>
+    </div>
+
+    <div class="modal-q">What did they ask for?</div>
+    <div class="chip-group" id="chips-asked">
+      <div class="chip" data-val="money">Money / Payment</div>
+      <div class="chip" data-val="gift_cards">Gift Cards</div>
+      <div class="chip" data-val="bank_info">Bank Info</div>
+      <div class="chip" data-val="ssn">Social Security #</div>
+      <div class="chip" data-val="personal_info">Personal Info</div>
+      <div class="chip" data-val="remote_access">Remote Access</div>
+      <div class="chip" data-val="crypto">Cryptocurrency</div>
+      <div class="chip" data-val="passwords">Passwords / Login</div>
+      <div class="chip" data-val="nothing">Nothing yet</div>
+      <div class="chip na" data-val="na">Not Applicable</div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="modal-cancel" onclick="closeReportModal()">Cancel</button>
+      <button class="modal-submit" id="modal-submit-btn" onclick="submitReport()">⚑ Submit Report</button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── DB ERROR POPUP ─────────────────────────────────────── -->
 <div class="db-error-overlay" id="db-error-overlay" style="display:none">
   <div class="db-error-box">
@@ -664,22 +776,60 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
 }
 
-// ─── reportNumber ─────────────────────────────────────────────
-async function reportNumber(phone) {
+// ─── Report modal ─────────────────────────────────────────────
+let _reportPhone = '';
+
+function reportNumber(phone) {
   const normalized = localDigits(phone);
   if (!normalized || normalized.length < 7) {
     alert('Enter a phone number first, then hit Report.');
     return;
   }
+  _reportPhone = normalized;
 
-  // Disable ALL report buttons right away to prevent double-tap
-  document.querySelectorAll('.btn-report-inline, .btn-report-banner').forEach(b => {
-    b.disabled = true;
-    b.textContent = 'Reporting…';
+  // Reset chips
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+
+  // Set number label
+  document.getElementById('modal-phone-label').textContent = phone;
+
+  // Reset submit button
+  const btn = document.getElementById('modal-submit-btn');
+  btn.disabled = false;
+  btn.textContent = '⚑ Submit Report';
+
+  document.getElementById('report-modal').style.display = 'flex';
+}
+
+function closeReportModal() {
+  document.getElementById('report-modal').style.display = 'none';
+}
+
+// Chip toggle — single select per group
+document.querySelectorAll('.chip-group').forEach(group => {
+  group.addEventListener('click', e => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    group.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+    chip.classList.add('selected');
   });
+});
+
+function getChipVal(groupId) {
+  const sel = document.querySelector(`#${groupId} .chip.selected`);
+  return sel ? sel.dataset.val : null;
+}
+
+async function submitReport() {
+  const normalized  = _reportPhone;
+  const pretendedAs = getChipVal('chips-pretend');
+  const askedFor    = getChipVal('chips-asked');
+
+  const btn = document.getElementById('modal-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
 
   try {
-    // 1. Check if number exists
     const { data: existing, error: fetchErr } = await sb
       .from('numbers')
       .select('phone_number, reports')
@@ -688,52 +838,52 @@ async function reportNumber(phone) {
     if (fetchErr) throw fetchErr;
 
     if (existing) {
-      // 2a. Exists → increment reports
-      const { error: updateErr } = await sb
-        .from('numbers')
-        .update({ reports: (existing.reports || 0) + 1 })
-        .eq('phone_number', normalized);
-      if (updateErr) throw updateErr;
+      const updates = { reports: (existing.reports || 0) + 1 };
+      if (pretendedAs && pretendedAs !== 'na') updates.pretends_to_be = pretendedAs;
+      if (askedFor    && askedFor    !== 'na') updates.asked_for      = askedFor;
+      const { error } = await sb.from('numbers').update(updates).eq('phone_number', normalized);
+      if (error) throw error;
     } else {
-      // 2b. New → insert with defaults
-      const { error: insertErr } = await sb
-        .from('numbers')
-        .insert({
-          phone_number: normalized,
-          category:     'unknown',
-          reports:      1,
-          status:       'unverified',
-          date_added:   new Date().toISOString()
-        });
-      if (insertErr) throw insertErr;
+      const row = {
+        phone_number: normalized,
+        category:     'unknown',
+        reports:      1,
+        status:       'unverified',
+        date_added:   new Date().toISOString()
+      };
+      if (pretendedAs && pretendedAs !== 'na') row.pretends_to_be = pretendedAs;
+      if (askedFor    && askedFor    !== 'na') row.asked_for      = askedFor;
+      const { error } = await sb.from('numbers').insert(row);
+      if (error) throw error;
     }
 
-    // 3. Success feedback
+    btn.textContent = 'Reported ✔';
+    btn.style.background = 'var(--green)';
+
+    // Update inline report buttons too
     document.querySelectorAll('.btn-report-inline, .btn-report-banner').forEach(b => {
       b.textContent = 'Reported ✔';
       b.style.background = 'var(--green)';
+      b.disabled = true;
     });
 
-    // Refresh stats + table quietly in background
     loadStats();
     loadRecentTable();
 
-    // Re-enable after 4s
     setTimeout(() => {
+      closeReportModal();
       document.querySelectorAll('.btn-report-inline, .btn-report-banner').forEach(b => {
         b.disabled = false;
         b.textContent = '⚑ Report Number';
         b.style.background = '';
       });
-    }, 4000);
+    }, 1800);
 
   } catch (e) {
-    console.error('reportNumber error:', e);
-    document.querySelectorAll('.btn-report-inline, .btn-report-banner').forEach(b => {
-      b.disabled = false;
-      b.textContent = '⚑ Report Number';
-      b.style.background = '';
-    });
+    console.error('submitReport error:', e);
+    btn.disabled = false;
+    btn.textContent = '⚑ Submit Report';
+    btn.style.background = '';
     alert('Report failed: ' + (e.message || 'unknown error'));
   }
 }

@@ -11,12 +11,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // ══════════════════════════════════════════════════════════
-  //  ⚙ SUPABASE CONFIG
+  //  ⚙ SUPABASE CONFIG — replace with your project values
   // ══════════════════════════════════════════════════════════
-const SUPABASE_URL = 'https://mehzgikilnijmgoqtvbr.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1laHpnaWtpbG5pam1nb3F0dmJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MzY3MjgsImV4cCI6MjA5NTMxMjcyOH0.-JREIJhqdYv1YkzYG1Ss2Bfiw0rpbBDu9xSRcbfuvH0';
-
-window.sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  const SUPABASE_URL  = 'YOUR_SUPABASE_URL';
+  const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
 
   // ══════════════════════════════════════════════════════════
   //  ⚙ EXPIRY — days after date_added before a number un-flags

@@ -756,8 +756,6 @@ document.querySelectorAll('.chip-group').forEach(group=>{
 function getChip(id){ const s=document.querySelector(`#${id} .chip.selected`); return s?s.dataset.val:null; }
 
 // ── Submit ─────────────────────────────────────────────────────
-const COOLDOWN_HOURS = 24; // ⚙ change to adjust cooldown window
-
 async function submitReport(){
   const rawSubject = document.getElementById('report-subject-input').value.trim();
   const subject = _reportType==='email' ? normalizeEmail(rawSubject) : localDigits(rawSubject);
@@ -773,29 +771,9 @@ async function submitReport(){
   const asked    = getChip('chips-asked');
 
   const btn=document.getElementById('modal-submit-btn');
-  btn.disabled=true; btn.textContent='Checking…';
+  btn.disabled=true; btn.textContent='Submitting…';
 
   try{
-    // ── Cooldown check ──────────────────────────────────────
-    const cooldownSince = new Date(Date.now() - COOLDOWN_HOURS*3600000).toISOString();
-    const {data:cooldownRows, error:ce} = await sb
-      .from('report_cooldowns')
-      .select('id')
-      .eq('target', subject)
-      .eq('target_type', _reportType)
-      .gte('reported_at', cooldownSince)
-      .limit(1);
-    if(ce) throw ce;
-
-    if(cooldownRows && cooldownRows.length > 0){
-      btn.disabled=false; btn.textContent='⚑ Submit Report';
-      alert(`This ${_reportType} was already reported recently. You can report it again in ${COOLDOWN_HOURS} hours.`);
-      return;
-    }
-
-    btn.textContent='Submitting…';
-
-    // ── Upsert report ───────────────────────────────────────
     const {data:existing,error:fe}=await sb.from(table).select(`${field},reports`).eq(field,subject).maybeSingle();
     if(fe)throw fe;
 
@@ -812,13 +790,6 @@ async function submitReport(){
       const {error}=await sb.from(table).insert(row);
       if(error)throw error;
     }
-
-    // ── Log cooldown ────────────────────────────────────────
-    await sb.from('report_cooldowns').insert({
-      target:      subject,
-      target_type: _reportType,
-      reported_at: new Date().toISOString()
-    });
 
     btn.textContent='Reported ✔'; btn.style.background='var(--green)';
     loadStats(); loadRecentTable(); loadRecentEmailTable();

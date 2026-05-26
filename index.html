@@ -3,561 +3,335 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scam Likely — Scam Call Database</title>
+<title>Scam Likely</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<!-- ─── Supabase ───────────────────────────────────────────── -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // ══════════════════════════════════════════════════════════
-  //  ⚙ SUPABASE CONFIG — replace with your project values
-  // ══════════════════════════════════════════════════════════
   const SUPABASE_URL  = 'https://mehzgikilnijmgoqtvbr.supabase.co';
   const SUPABASE_ANON = 'sb_publishable_j_CGsCwMunHuyFREb_zewg_AGUuUY7f';
-
-  // ══════════════════════════════════════════════════════════
-  //  ⚙ EXPIRY — days after date_added before a number un-flags
-  // ══════════════════════════════════════════════════════════
   const EXPIRY_DAYS = 365;
-
+  const SUPPORT_EMAIL = 'Kittyrexx@proton.me';
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 </script>
-
 <style>
-  :root {
-    --bg: #f8f8f6;
-    --surface: #ffffff;
-    --border: #e8e8e4;
-    --text: #111110;
-    --text-muted: #888884;
-    --accent: #e63946;
-    --accent-light: #fff0f1;
-    --accent-mid: #ffd6d8;
-    --green: #2d9a5f;
-    --green-light: #edfaf3;
-    --amber: #d97706;
-    --amber-light: #fffbeb;
-    --mono: 'DM Mono', monospace;
-    --sans: 'Sora', sans-serif;
-    --radius: 12px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-    --shadow-lg: 0 2px 8px rgba(0,0,0,0.08), 0 16px 48px rgba(0,0,0,0.08);
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-  }
+:root {
+  --bg:#f8f8f6; --surface:#fff; --border:#e8e8e4;
+  --text:#111110; --text-muted:#888884;
+  --red:#e63946; --red-light:#fff0f1; --red-mid:#ffd6d8;
+  --green:#2d9a5f; --amber:#d97706; --amber-light:#fffbeb;
+  --blue:#1a6db5; --blue-deep:#0f4880; --blue-sea:#1e90c8;
+  --blue-light:#e8f4fd; --blue-mid:#93c5e8;
+  --mono:'DM Mono',monospace; --sans:'Sora',sans-serif;
+  --radius:12px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --shadow-lg:0 2px 8px rgba(0,0,0,.08),0 16px 48px rgba(0,0,0,.08);
+  /* theme tokens — swapped per tab */
+  --accent:#e63946; --accent-light:#fff0f1; --accent-mid:#ffd6d8;
+  --page-bg:#f8f8f6;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--page-bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;transition:background .5s ease}
 
-  /* ─── TOPBAR ──────────────────────────────────────────── */
-  .topbar {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    background: rgba(248,248,246,0.88);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    height: 56px;
-    display: flex; align-items: center;
-    padding: 0 24px; gap: 8px;
-  }
-  .topbar-logo {
-    font-weight: 700; font-size: 15px; letter-spacing: -0.3px;
-    margin-right: auto;
-    display: flex; align-items: center; gap: 8px;
-    cursor: pointer;
-  }
-  .logo-icon {
-    width: 28px; height: 28px;
-    background: var(--accent); border-radius: 7px;
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 14px;
-  }
-  .nav-btn {
-    padding: 6px 16px; border-radius: 8px; border: none;
-    background: transparent; font-family: var(--sans);
-    font-size: 13.5px; font-weight: 500; color: var(--text-muted);
-    cursor: pointer; transition: all 0.15s;
-  }
-  .nav-btn:hover { color: var(--text); background: rgba(0,0,0,0.04); }
-  .nav-btn.active { color: var(--text); background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-  .report-nav-btn {
-    margin-left: 8px; padding: 6px 16px; border-radius: 8px;
-    border: 1.5px solid var(--accent); background: transparent;
-    font-family: var(--sans); font-size: 13.5px; font-weight: 600;
-    color: var(--accent); cursor: pointer; text-decoration: none;
-    transition: all 0.15s; display: flex; align-items: center; gap: 6px;
-  }
-  .report-nav-btn:hover { background: var(--accent); color: white; }
+/* ── THEME STATES ── */
+body.theme-phone { --accent:var(--red); --accent-light:var(--red-light); --accent-mid:var(--red-mid); --page-bg:#f8f8f6; }
+body.theme-email { --accent:var(--blue-sea); --accent-light:var(--blue-light); --accent-mid:var(--blue-mid); --page-bg:#eaf5fc; }
 
-  /* ─── PAGES ───────────────────────────────────────────── */
-  .page { display: none; min-height: 100vh; padding-top: 56px; }
-  .page.active { display: block; }
+/* ── TOPBAR ── */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(248,248,246,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;padding:0 20px;gap:6px;transition:background .4s}
+body.theme-email .topbar{background:rgba(234,245,252,.92);}
+.topbar-logo{font-weight:700;font-size:15px;letter-spacing:-.3px;margin-right:auto;display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;color:var(--text)}
+.logo-icon{width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;transition:background .4s}
+.nav-btn{padding:6px 14px;border-radius:8px;border:none;background:transparent;font-family:var(--sans);font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+.nav-btn:hover{color:var(--text);background:rgba(0,0,0,.05)}
+.nav-btn.active{color:var(--text);background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.09)}
+.report-topbar-btn{margin-left:6px;padding:7px 16px;border-radius:8px;border:1.5px solid var(--accent);background:transparent;font-family:var(--sans);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
+.report-topbar-btn:hover{background:var(--accent);color:white}
 
-  /* ─── HOME ────────────────────────────────────────────── */
-  .hero {
-    max-width: 680px; margin: 0 auto;
-    padding: 80px 24px 60px; text-align: center;
-  }
-  .hero-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 5px 12px;
-    background: var(--accent-light); border: 1px solid var(--accent-mid);
-    border-radius: 100px; font-size: 12px; font-weight: 600; color: var(--accent);
-    letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 28px;
-  }
-  .hero h1 {
-    font-size: clamp(36px, 6vw, 56px); font-weight: 700;
-    line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 20px;
-  }
-  .hero h1 span { color: var(--accent); }
-  .hero p {
-    font-size: 17px; color: var(--text-muted); line-height: 1.65;
-    max-width: 500px; margin: 0 auto 40px; font-weight: 300;
-  }
-  .hero-cta { display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-  .btn-primary {
-    padding: 12px 28px; background: var(--text); color: white;
-    border: none; border-radius: 10px;
-    font-family: var(--sans); font-size: 15px; font-weight: 600;
-    cursor: pointer; transition: all 0.15s;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .btn-primary:hover { background: #333; transform: translateY(-1px); box-shadow: var(--shadow-lg); }
-  .btn-ghost {
-    padding: 12px 28px; background: transparent; color: var(--text);
-    border: 1.5px solid var(--border); border-radius: 10px;
-    font-family: var(--sans); font-size: 15px; font-weight: 500;
-    cursor: pointer; text-decoration: none; transition: all 0.15s;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .btn-ghost:hover { border-color: var(--text); transform: translateY(-1px); }
+/* ── PAGES ── */
+.page{display:none;min-height:100vh;padding-top:56px}
+.page.active{display:block}
 
-  /* Stats */
-  .stats-strip {
-    display: flex; justify-content: center;
-    max-width: 600px; margin: 60px auto 0;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
-  }
-  .stat-item {
-    flex: 1; padding: 24px 20px; text-align: center;
-    border-right: 1px solid var(--border);
-  }
-  .stat-item:last-child { border-right: none; }
-  .stat-num {
-    font-family: var(--mono); font-size: 28px; font-weight: 500;
-    color: var(--text); letter-spacing: -0.5px;
-  }
-  .stat-label {
-    font-size: 12px; color: var(--text-muted); font-weight: 500;
-    margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;
-  }
+/* ── HERO ── */
+.hero{max-width:680px;margin:0 auto;padding:72px 24px 56px;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:var(--accent-light);border:1px solid var(--accent-mid);border-radius:100px;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.6px;text-transform:uppercase;margin-bottom:26px;transition:background .4s,border-color .4s,color .4s}
+.hero h1{font-size:clamp(34px,5.5vw,54px);font-weight:700;line-height:1.1;letter-spacing:-1.5px;margin-bottom:18px}
+.hero h1 span{color:var(--accent);transition:color .4s}
+.hero p{font-size:16px;color:var(--text-muted);line-height:1.65;max-width:480px;margin:0 auto 36px;font-weight:300}
+.hero-cta{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.btn-primary{padding:11px 26px;background:var(--text);color:white;border:none;border-radius:10px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px}
+.btn-primary:hover{background:#333;transform:translateY(-1px);box-shadow:var(--shadow-lg)}
+.btn-ghost{padding:11px 26px;background:transparent;color:var(--text);border:1.5px solid var(--border);border-radius:10px;font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .15s;display:flex;align-items:center;gap:7px}
+.btn-ghost:hover{border-color:var(--text);transform:translateY(-1px)}
 
-  /* How it works */
-  .section { max-width: 800px; margin: 0 auto; padding: 0 24px 80px; }
-  .section-title {
-    font-size: 13px; font-weight: 600; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 1px;
-    margin-bottom: 32px; text-align: center;
-  }
-  .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
-  .step-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow);
-  }
-  .step-num {
-    width: 32px; height: 32px; background: var(--text); color: white;
-    border-radius: 8px; display: flex; align-items: center; justify-content: center;
-    font-family: var(--mono); font-size: 13px; font-weight: 500; margin-bottom: 16px;
-  }
-  .step-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
-  .step-card p { font-size: 13.5px; color: var(--text-muted); line-height: 1.55; }
+/* ── STATS ── */
+.stats-strip{display:flex;max-width:720px;margin:52px auto 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.stat-item{flex:1;padding:22px 16px;text-align:center;border-right:1px solid var(--border)}
+.stat-item:last-child{border-right:none}
+.stat-num{font-family:var(--mono);font-size:26px;font-weight:500;letter-spacing:-.5px}
+.stat-label{font-size:11px;color:var(--text-muted);font-weight:500;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
 
-  /* Recent table */
-  .recent-section { max-width: 800px; margin: 0 auto; padding: 0 24px 80px; }
-  .entry-table {
-    width: 100%; border-collapse: collapse;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); overflow: hidden;
-    box-shadow: var(--shadow); font-size: 13.5px;
-  }
-  .entry-table th {
-    background: var(--bg); border-bottom: 1px solid var(--border);
-    padding: 10px 16px; text-align: left;
-    font-size: 11px; font-weight: 600; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .entry-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
-  .entry-table tr:last-child td { border-bottom: none; }
-  .entry-table tr:hover td { background: var(--bg); }
-  .entry-table .mono { font-family: var(--mono); }
-  .pill { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: 11px; font-weight: 600; }
-  .pill-high   { background: var(--accent-mid); color: #c0222e; }
-  .pill-medium { background: #fde68a; color: #92400e; }
-  .pill-low    { background: #c3f0d8; color: #1a6b3e; }
+/* ── SECTIONS ── */
+.section{max-width:800px;margin:0 auto;padding:0 24px 72px}
+.section-title{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:28px;text-align:center}
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:14px}
+.step-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.step-num{width:30px;height:30px;background:var(--text);color:white;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:500;margin-bottom:14px}
+.step-card h3{font-size:14px;font-weight:600;margin-bottom:7px}
+.step-card p{font-size:13px;color:var(--text-muted);line-height:1.55}
+.recent-section{max-width:800px;margin:0 auto;padding:0 24px 72px}
 
-  /* ─── LOOKUP PAGE ─────────────────────────────────────── */
-  .lookup-wrap { max-width: 480px; margin: 0 auto; padding: 48px 24px 80px; }
-  .lookup-title { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
-  .lookup-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 32px; }
+/* ── TABLE ── */
+.entry-table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);font-size:13px}
+.entry-table th{background:var(--bg);border-bottom:1px solid var(--border);padding:9px 14px;text-align:left;font-size:10.5px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.entry-table td{padding:11px 14px;border-bottom:1px solid var(--border)}
+.entry-table tr:last-child td{border-bottom:none}
+.entry-table tr:hover td{background:var(--bg)}
+.mono{font-family:var(--mono)}
+.pill{display:inline-block;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600}
+.pill-high{background:var(--red-mid);color:#c0222e}
+.pill-medium{background:#fde68a;color:#92400e}
+.pill-low{background:#c3f0d8;color:#1a6b3e}
 
-  .phone-display {
-    background: var(--surface); border: 1.5px solid var(--border);
-    border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px;
-    min-height: 72px; display: flex; align-items: center; justify-content: space-between;
-    box-shadow: var(--shadow);
-  }
-  .phone-display-num {
-    font-family: var(--mono); font-size: 26px; font-weight: 500;
-    letter-spacing: 1px; color: var(--text); flex: 1;
-    min-height: 36px; display: flex; align-items: center;
-  }
-  .phone-display-num.placeholder { color: var(--text-muted); font-size: 18px; }
-  .display-backspace {
-    width: 36px; height: 36px; border: none; background: transparent;
-    border-radius: 8px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--text-muted); font-size: 18px; transition: all 0.1s;
-  }
-  .display-backspace:hover { background: var(--accent-light); color: var(--accent); }
+/* ── LOOKUP WRAP ── */
+.lookup-wrap{max-width:460px;margin:0 auto;padding:44px 24px 80px}
+.lookup-title{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-bottom:5px}
+.lookup-sub{font-size:13.5px;color:var(--text-muted);margin-bottom:28px}
 
-  /* Dialpad */
-  .dialpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
-  .dial-key {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 14px 8px; cursor: pointer; text-align: center;
-    transition: all 0.1s; box-shadow: 0 1px 2px rgba(0,0,0,0.04); user-select: none;
-  }
-  .dial-key:hover { border-color: #ccc; transform: translateY(-1px); box-shadow: var(--shadow); }
-  .dial-key:active { transform: scale(0.96); background: var(--bg); }
-  .dial-key-num { font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--text); line-height: 1; }
-  .dial-key-sub { font-size: 8px; color: var(--text-muted); letter-spacing: 1.5px; font-weight: 600; margin-top: 3px; text-transform: uppercase; }
-  .dial-key.special { background: var(--bg); }
+/* ── PHONE DISPLAY ── */
+.phone-display{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:18px;min-height:68px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
+.phone-display-num{font-family:var(--mono);font-size:24px;font-weight:500;letter-spacing:1px;color:var(--text);flex:1;min-height:32px;display:flex;align-items:center}
+.phone-display-num.placeholder{color:var(--text-muted);font-size:17px}
+.display-backspace{width:34px;height:34px;border:none;background:transparent;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:17px;transition:all .1s}
+.display-backspace:hover{background:var(--red-light);color:var(--red)}
 
-  .search-btn {
-    width: 100%; padding: 14px; background: var(--text); color: white;
-    border: none; border-radius: 10px;
-    font-family: var(--sans); font-size: 15px; font-weight: 600;
-    cursor: pointer; transition: all 0.15s; margin-bottom: 12px;
-  }
-  .search-btn:hover { background: #333; }
-  .search-btn:disabled { background: #ccc; cursor: not-allowed; }
+/* ── DIALPAD ── */
+.dialpad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
+.dial-key{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 8px;cursor:pointer;text-align:center;transition:all .1s;box-shadow:0 1px 2px rgba(0,0,0,.04);user-select:none}
+.dial-key:hover{border-color:#bbb;transform:translateY(-1px);box-shadow:var(--shadow)}
+.dial-key:active{transform:scale(.96);background:var(--bg)}
+.dial-key-num{font-family:var(--mono);font-size:21px;font-weight:500;color:var(--text);line-height:1}
+.dial-key-sub{font-size:8px;color:var(--text-muted);letter-spacing:1.5px;font-weight:600;margin-top:3px;text-transform:uppercase}
+.dial-key.special{background:var(--bg)}
 
-  .manual-toggle {
-    font-size: 12px; color: var(--text-muted); cursor: pointer;
-    background: none; border: none; font-family: var(--sans);
-    text-decoration: underline; text-underline-offset: 2px; padding: 0;
-  }
-  .manual-toggle:hover { color: var(--text); }
-  .manual-field {
-    width: 100%; padding: 11px 16px; border: 1.5px solid var(--border);
-    border-radius: 10px; font-family: var(--mono); font-size: 15px;
-    background: var(--surface); color: var(--text); outline: none;
-    transition: border-color 0.15s; margin-bottom: 12px; display: none;
-  }
-  .manual-field:focus { border-color: var(--text); }
-  .manual-field.visible { display: block; }
+/* ── EMAIL INPUT ── */
+.email-display{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px 22px;margin-bottom:18px;min-height:68px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);transition:border-color .2s}
+.email-display:focus-within{border-color:var(--blue-sea)}
+.email-icon-prefix{font-size:20px;flex-shrink:0}
+.email-field-main{flex:1;border:none;outline:none;font-family:var(--mono);font-size:17px;background:transparent;color:var(--text)}
+.email-field-main::placeholder{color:var(--text-muted);font-size:14px;font-family:var(--sans)}
+.email-clear{width:30px;height:30px;border:none;background:transparent;border-radius:6px;cursor:pointer;color:var(--text-muted);font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .1s;flex-shrink:0}
+.email-clear:hover{background:var(--blue-light);color:var(--blue-sea)}
 
-  /* ─── RESULT CARD ─────────────────────────────────────── */
-  #result-area { margin-top: 24px; }
-  .result-card {
-    background: var(--surface); border: 1.5px solid var(--border);
-    border-radius: 14px; overflow: hidden;
-    box-shadow: var(--shadow-lg); animation: slideUp 0.3s ease;
-  }
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .result-header {
-    padding: 20px 24px; display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-  }
-  .result-status-flagged { background: #fff5f5; }
-  .result-status-expired { background: var(--amber-light); }
-  .status-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 5px 12px; border-radius: 100px;
-    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .badge-danger  { background: var(--accent-mid); color: #c0222e; }
-  .badge-expired { background: #fde68a; color: #92400e; }
-  .status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
-  .dot-danger  { background: var(--accent); animation: pulse 1.5s infinite; }
-  .dot-expired { background: var(--amber); }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-  .result-phone { font-family: var(--mono); font-size: 20px; font-weight: 500; letter-spacing: 0.5px; }
-  .result-body { padding: 20px 24px; }
-  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-  .result-field label {
-    font-size: 11px; font-weight: 600; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;
-  }
-  .result-field .val { font-size: 14px; font-weight: 500; font-family: var(--mono); }
-  .risk-high   { color: var(--accent); }
-  .risk-medium { color: var(--amber); }
-  .risk-low    { color: var(--green); }
-  .notes-section { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 4px; }
-  .notes-label {
-    font-size: 11px; font-weight: 600; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
-  }
-  .note-item { font-size: 13.5px; color: var(--text); display: flex; gap: 8px; align-items: baseline; margin-bottom: 5px; }
-  .note-item::before { content: '—'; color: var(--text-muted); flex-shrink: 0; }
-  .tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-  .tag {
-    padding: 3px 10px; background: var(--bg); border: 1px solid var(--border);
-    border-radius: 100px; font-size: 11.5px; font-weight: 500;
-    color: var(--text-muted); font-family: var(--mono);
-  }
-  .result-footer {
-    border-top: 1px solid var(--border); padding: 14px 24px;
-    display: flex; justify-content: space-between; align-items: center; gap: 12px;
-  }
-  .result-footer-note { font-size: 12px; color: var(--text-muted); }
+/* ── EMAIL PAGE BG ── */
+#page-email{background:linear-gradient(160deg,#eaf5fc 0%,#daeef8 100%);min-height:100vh}
+#page-email .lookup-wrap{} 
+#page-email .phone-display,#page-email .email-display{border-color:var(--blue-mid)}
+#page-email .search-btn{background:var(--blue-sea)}
+#page-email .search-btn:hover{background:var(--blue-deep)}
+#page-email .report-banner{background:var(--blue-sea)}
 
-  /* ─── REPORT BUTTON ───────────────────────────────────── */
-  .btn-report-inline {
-    padding: 8px 18px; background: var(--accent); color: white;
-    border: none; border-radius: 8px;
-    font-family: var(--sans); font-size: 13px; font-weight: 700;
-    cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
-    white-space: nowrap;
-  }
-  .btn-report-inline:hover { background: #c8303b; transform: translateY(-1px); }
-  .btn-report-inline:disabled { background: var(--green); cursor: default; transform: none; }
+/* ── SEARCH BTN ── */
+.search-btn{width:100%;padding:13px;background:var(--accent);color:white;border:none;border-radius:10px;font-family:var(--sans);font-size:14.5px;font-weight:600;cursor:pointer;transition:all .2s;margin-bottom:12px}
+.search-btn:hover{filter:brightness(1.08)}
+.search-btn:disabled{background:#ccc;cursor:not-allowed;filter:none}
+.manual-toggle{font-size:12px;color:var(--text-muted);cursor:pointer;background:none;border:none;font-family:var(--sans);text-decoration:underline;text-underline-offset:2px;padding:0}
+.manual-toggle:hover{color:var(--text)}
+.manual-field{width:100%;padding:10px 15px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--mono);font-size:14px;background:var(--surface);color:var(--text);outline:none;transition:border-color .15s;margin-bottom:12px;display:none}
+.manual-field:focus{border-color:var(--text)}
+.manual-field.visible{display:block}
 
-  /* Not-found card */
-  .not-found-card {
-    background: var(--surface); border: 1.5px solid var(--border);
-    border-radius: 14px; padding: 36px 24px; text-align: center;
-    box-shadow: var(--shadow); animation: slideUp 0.3s ease;
-  }
-  .not-found-icon { font-size: 36px; margin-bottom: 12px; }
-  .not-found-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
-  .not-found-card p { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; }
-  .not-found-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+/* ── RESULT CARD ── */
+#result-area,#email-result-area{margin-top:22px}
+.result-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-lg);animation:slideUp .28s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.result-header{padding:18px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.result-status-flagged{background:#fff5f5}
+.result-status-flagged-blue{background:#f0f8ff}
+.result-status-expired{background:var(--amber-light)}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:100px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.badge-danger{background:var(--red-mid);color:#c0222e}
+.badge-danger-blue{background:var(--blue-mid);color:#0f4880}
+.badge-expired{background:#fde68a;color:#92400e}
+.status-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.dot-danger{background:var(--red);animation:pulse 1.5s infinite}
+.dot-danger-blue{background:var(--blue-sea);animation:pulse 1.5s infinite}
+.dot-expired{background:var(--amber)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.result-phone{font-family:var(--mono);font-size:18px;font-weight:500;letter-spacing:.4px}
+.result-body{padding:18px 22px}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.result-field label{font-size:10.5px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px}
+.result-field .val{font-size:13.5px;font-weight:500;font-family:var(--mono)}
+.risk-high{color:var(--red)}
+.risk-medium{color:var(--amber)}
+.risk-low{color:var(--green)}
+.result-footer{border-top:1px solid var(--border);padding:12px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.result-footer-note{font-size:11.5px;color:var(--text-muted)}
 
-  /* Bottom report banner */
-  .report-banner {
-    background: var(--accent); color: white; border-radius: var(--radius);
-    padding: 20px 24px; display: flex; align-items: center; justify-content: space-between;
-    margin-top: 24px; gap: 16px;
-  }
-  .report-banner p { font-size: 14px; line-height: 1.5; opacity: 0.92; }
-  .report-banner strong { font-size: 15px; display: block; margin-bottom: 3px; }
-  .btn-report-banner {
-    padding: 10px 20px; background: white; color: var(--accent);
-    border: none; border-radius: 8px;
-    font-family: var(--sans); font-size: 14px; font-weight: 700;
-    cursor: pointer; text-decoration: none; white-space: nowrap;
-    transition: all 0.15s; flex-shrink: 0;
-  }
-  .btn-report-banner:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+/* ── NOT FOUND ── */
+.not-found-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:34px 22px;text-align:center;box-shadow:var(--shadow);animation:slideUp .28s ease}
+.not-found-icon{font-size:34px;margin-bottom:10px}
+.not-found-card h3{font-size:16px;font-weight:600;margin-bottom:7px}
+.not-found-card p{font-size:13.5px;color:var(--text-muted);line-height:1.6;margin-bottom:18px}
+.not-found-actions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
 
-  /* ─── REPORT MODAL ────────────────────────────────────── */
-  .modal-overlay {
-    position: fixed; inset: 0; z-index: 200;
-    background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px; animation: fadeIn 0.15s ease;
-  }
-  .modal-box {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 18px; padding: 28px 28px 24px;
-    max-width: 440px; width: 100%;
-    box-shadow: var(--shadow-lg);
-    animation: popIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  .modal-header {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    margin-bottom: 20px;
-  }
-  .modal-header h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
-  .modal-num {
-    font-family: var(--mono); font-size: 13px; color: var(--text-muted);
-    margin-top: 3px;
-  }
-  .modal-close {
-    width: 28px; height: 28px; border: none; background: var(--bg);
-    border-radius: 6px; cursor: pointer; font-size: 16px; color: var(--text-muted);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    transition: all 0.1s;
-  }
-  .modal-close:hover { background: var(--border); color: var(--text); }
+/* ── REPORT BANNER ── */
+.report-banner{border-radius:var(--radius);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;margin-top:22px;gap:14px}
+.report-banner p{font-size:13.5px;line-height:1.5;opacity:.92}
+.report-banner strong{font-size:14px;display:block;margin-bottom:2px}
+.btn-report-inline{padding:7px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn-report-inline:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-report-inline:disabled{background:var(--green);cursor:default;transform:none;filter:none}
+.btn-report-banner{padding:9px 18px;background:white;border:none;border-radius:8px;font-family:var(--sans);font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.btn-report-banner:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
 
-  .modal-q { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: var(--text); }
+/* ── TYPE PICKER MODAL ── */
+.modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.42);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .15s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;max-width:460px;width:100%;box-shadow:var(--shadow-lg);animation:popIn .22s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.modal-head h3{font-size:18px;font-weight:700;letter-spacing:-.3px}
+.modal-close{width:28px;height:28px;border:none;background:var(--bg);border-radius:7px;cursor:pointer;font-size:15px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;transition:all .1s}
+.modal-close:hover{background:var(--border);color:var(--text)}
+.modal-sub{font-size:13px;color:var(--text-muted);margin-bottom:22px}
 
-  .chip-group { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 20px; }
-  .chip {
-    padding: 6px 13px; border-radius: 100px;
-    border: 1.5px solid var(--border); background: var(--surface);
-    font-family: var(--sans); font-size: 12.5px; font-weight: 500;
-    color: var(--text-muted); cursor: pointer; transition: all 0.12s;
-    user-select: none;
-  }
-  .chip:hover { border-color: var(--text); color: var(--text); }
-  .chip.selected {
-    border-color: var(--text); background: var(--text); color: white;
-  }
-  .chip.na { border-style: dashed; }
-  .chip.na.selected { background: var(--text-muted); border-color: var(--text-muted); color: white; }
+/* type picker cards */
+.type-picker{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px}
+.type-card{border:2px solid var(--border);border-radius:14px;padding:20px 16px;cursor:pointer;transition:all .18s;text-align:center;background:var(--bg)}
+.type-card:hover{border-color:var(--accent);background:var(--accent-light);transform:translateY(-2px);box-shadow:var(--shadow)}
+.type-card.phone-card:hover{border-color:var(--red);background:var(--red-light)}
+.type-card.email-card:hover{border-color:var(--blue-sea);background:var(--blue-light)}
+.type-card-icon{font-size:28px;margin-bottom:10px}
+.type-card h4{font-size:15px;font-weight:700;margin-bottom:5px}
+.type-card p{font-size:12px;color:var(--text-muted);line-height:1.4}
 
-  .modal-footer { display: flex; gap: 10px; margin-top: 4px; }
-  .modal-submit {
-    flex: 1; padding: 12px; background: var(--accent); color: white;
-    border: none; border-radius: 10px;
-    font-family: var(--sans); font-size: 14px; font-weight: 700;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .modal-submit:hover { background: #c8303b; }
-  .modal-submit:disabled { background: var(--green); cursor: default; }
-  .modal-cancel {
-    padding: 12px 18px; background: var(--bg); color: var(--text-muted);
-    border: 1.5px solid var(--border); border-radius: 10px;
-    font-family: var(--sans); font-size: 14px; font-weight: 500;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .modal-cancel:hover { border-color: var(--text); color: var(--text); }
+/* report form inside modal */
+.report-form{display:none}
+.report-form.active{display:block}
+.rform-input{width:100%;padding:11px 15px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--mono);font-size:15px;background:var(--surface);color:var(--text);outline:none;transition:border-color .15s;margin-bottom:18px}
+.rform-input:focus{border-color:var(--text)}
+.modal-q{font-size:13px;font-weight:600;margin-bottom:9px;color:var(--text)}
+.chip-group{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}
+.chip{padding:6px 13px;border-radius:100px;border:1.5px solid var(--border);background:var(--surface);font-family:var(--sans);font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all .12s;user-select:none}
+.chip:hover{border-color:var(--text);color:var(--text)}
+.chip.selected{border-color:var(--text);background:var(--text);color:white}
+.chip.na{border-style:dashed}
+.chip.na.selected{background:var(--text-muted);border-color:var(--text-muted);color:white}
+.modal-footer{display:flex;gap:9px;margin-top:6px}
+.modal-submit{flex:1;padding:11px;background:var(--accent);color:white;border:none;border-radius:10px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;transition:all .15s}
+.modal-submit:hover{filter:brightness(1.08)}
+.modal-submit:disabled{background:var(--green);cursor:default}
+.modal-cancel{padding:11px 16px;background:var(--bg);color:var(--text-muted);border:1.5px solid var(--border);border-radius:10px;font-family:var(--sans);font-size:13.5px;font-weight:500;cursor:pointer;transition:all .15s}
+.modal-cancel:hover{border-color:var(--text);color:var(--text)}
+.back-btn{display:flex;align-items:center;gap:5px;background:none;border:none;font-family:var(--sans);font-size:13px;color:var(--text-muted);cursor:pointer;padding:0;margin-bottom:16px}
+.back-btn:hover{color:var(--text)}
 
-  /* ─── DB ERROR POPUP ──────────────────────────────────── */
-  .db-error-overlay {
-    position: fixed; inset: 0; z-index: 999;
-    background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px; animation: fadeIn 0.2s ease;
-  }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  .db-error-box {
-    background: var(--surface); border: 1.5px solid var(--accent-mid);
-    border-radius: 16px; padding: 36px 32px; max-width: 420px; width: 100%;
-    box-shadow: 0 8px 40px rgba(230,57,70,0.15), var(--shadow-lg);
-    text-align: center; animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  @keyframes popIn { from { opacity: 0; transform: scale(0.88); } to { opacity: 1; transform: scale(1); } }
-  .db-error-icon {
-    width: 56px; height: 56px; background: var(--accent-light);
-    border: 2px solid var(--accent-mid); border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; margin: 0 auto 20px;
-  }
-  .db-error-box h2 { font-size: 18px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.3px; }
-  .db-error-box p { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 8px; }
-  .db-error-code {
-    display: inline-block; margin: 12px 0 20px; padding: 8px 14px;
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 8px; font-family: var(--mono); font-size: 12px; color: var(--accent);
-  }
-  .db-error-dismiss {
-    padding: 10px 24px; background: var(--accent); color: white;
-    border: none; border-radius: 8px;
-    font-family: var(--sans); font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .db-error-dismiss:hover { background: #c8303b; }
+/* ── DB ERROR ── */
+.db-error-overlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn .2s ease}
+.db-error-box{background:var(--surface);border:1.5px solid var(--red-mid);border-radius:16px;padding:34px 30px;max-width:400px;width:100%;box-shadow:var(--shadow-lg);text-align:center;animation:popIn .22s cubic-bezier(.34,1.56,.64,1)}
+.db-error-icon{width:52px;height:52px;background:var(--red-light);border:2px solid var(--red-mid);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 18px}
+.db-error-box h2{font-size:17px;font-weight:700;margin-bottom:9px}
+.db-error-box p{font-size:13.5px;color:var(--text-muted);line-height:1.6;margin-bottom:7px}
+.db-error-code{display:inline-block;margin:10px 0 18px;padding:7px 13px;background:var(--bg);border:1px solid var(--border);border-radius:7px;font-family:var(--mono);font-size:11.5px;color:var(--red)}
+.db-error-dismiss{padding:9px 22px;background:var(--red);color:white;border:none;border-radius:8px;font-family:var(--sans);font-size:13.5px;font-weight:600;cursor:pointer}
+.lookup-disabled-banner{background:var(--red-light);border:1.5px solid var(--red-mid);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;margin-bottom:18px;font-size:13px;color:#c0222e;font-weight:500}
+.loading-ring{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  /* Disabled lookup banner */
-  .lookup-disabled-banner {
-    background: var(--accent-light); border: 1.5px solid var(--accent-mid);
-    border-radius: 10px; padding: 14px 18px;
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 20px; font-size: 13.5px; color: #c0222e; font-weight: 500;
-  }
+/* ── FOOTER ── */
+.site-footer{text-align:center;padding:32px 24px 48px;font-size:12.5px;color:var(--text-muted)}
+.site-footer a{color:var(--accent);text-decoration:none}
+.site-footer a:hover{text-decoration:underline}
 
-  /* Loading */
-  .loading-ring {
-    width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: white; border-radius: 50%;
-    animation: spin 0.6s linear infinite; display: inline-block;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  @media (max-width: 500px) {
-    .result-grid { grid-template-columns: 1fr; }
-    .stats-strip { flex-direction: column; }
-    .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
-    .stat-item:last-child { border-bottom: none; }
-  }
+@media(max-width:500px){
+  .result-grid{grid-template-columns:1fr}
+  .stats-strip{flex-direction:column}
+  .stat-item{border-right:none;border-bottom:1px solid var(--border)}
+  .stat-item:last-child{border-bottom:none}
+  .type-picker{grid-template-columns:1fr}
+}
 </style>
 </head>
-<body>
+<body class="theme-phone">
 
-<!-- ─── TOPBAR ──────────────────────────────────────────────── -->
+<!-- TOPBAR -->
 <nav class="topbar">
-  <div class="topbar-logo" onclick="showPage('home')">
+  <a class="topbar-logo" onclick="showPage('home')">
     <div class="logo-icon">📵</div>
     Scam Likely
-  </div>
+  </a>
   <button class="nav-btn active" id="nav-home"   onclick="showPage('home')">Home</button>
-  <button class="nav-btn"        id="nav-lookup" onclick="showPage('lookup')">Lookup</button>
-  <a href="#" onclick="reportNumber(dialInput); return false;" class="report-nav-btn">⚑ Report</a>
+  <button class="nav-btn"        id="nav-lookup" onclick="showPage('lookup')">📞 Phone</button>
+  <button class="nav-btn"        id="nav-email"  onclick="showPage('email')">✉️ Email</button>
+  <button class="report-topbar-btn" onclick="openTypePicker()">⚑ Report</button>
 </nav>
 
-<!-- ════════════════════════════════════════════════════════════
-     HOME PAGE
-═════════════════════════════════════════════════════════════ -->
+<!-- ══ HOME ══ -->
 <div class="page active" id="page-home">
   <div class="hero">
     <div class="hero-badge">🛡 Community-Powered Protection</div>
-    <h1>Stop Scam Calls<br><span>Before They Strike</span></h1>
-    <p>Search our database of known scam numbers. Check before you answer — protect yourself and others from fraud.</p>
+    <h1>Stop Scams<br><span>Before They Strike</span></h1>
+    <p>Search our live database of scam phone numbers and email addresses — reported by real people.</p>
     <div class="hero-cta">
-      <button class="btn-primary" onclick="showPage('lookup')">🔍 Look Up a Number</button>
-      <button class="btn-ghost"   onclick="showPage('lookup'); setTimeout(()=>reportNumber(dialInput),100)">⚑ Report a Number</button>
+      <button class="btn-primary" onclick="showPage('lookup')">📞 Check a Number</button>
+      <button class="btn-primary" onclick="showPage('email')" style="background:var(--blue-sea)">✉️ Check an Email</button>
+      <button class="btn-ghost"   onclick="openTypePicker()">⚑ Report a Scam</button>
     </div>
   </div>
 
   <div class="stats-strip">
-    <div class="stat-item">
-      <div class="stat-num" id="stat-total">—</div>
-      <div class="stat-label">Numbers Tracked</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num" id="stat-active">—</div>
-      <div class="stat-label">Active Threats</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num" id="stat-reports">—</div>
-      <div class="stat-label">Total Reports</div>
-    </div>
+    <div class="stat-item"><div class="stat-num" id="stat-numbers">—</div><div class="stat-label">Numbers Tracked</div></div>
+    <div class="stat-item"><div class="stat-num" id="stat-emails">—</div><div class="stat-label">Emails Tracked</div></div>
+    <div class="stat-item"><div class="stat-num" id="stat-active">—</div><div class="stat-label">Active Threats</div></div>
+    <div class="stat-item"><div class="stat-num" id="stat-reports">—</div><div class="stat-label">Total Reports</div></div>
   </div>
 
-  <div style="margin-top: 72px;">
+  <div style="margin-top:68px">
     <div class="section">
       <div class="section-title">How It Works</div>
       <div class="steps-grid">
-        <div class="step-card"><div class="step-num">01</div><h3>Enter the Number</h3><p>Type or dial the phone number you received a suspicious call from.</p></div>
-        <div class="step-card"><div class="step-num">02</div><h3>Instant Check</h3><p>We search our live database of reported scam numbers in real-time.</p></div>
-        <div class="step-card"><div class="step-num">03</div><h3>See the Details</h3><p>Get risk level, category, report count, and notes from the community.</p></div>
-        <div class="step-card"><div class="step-num">04</div><h3>Report New Ones</h3><p>Didn't find it? One click adds it so others can stay safe too.</p></div>
+        <div class="step-card"><div class="step-num">01</div><h3>Enter Number or Email</h3><p>Dial the phone number or paste the email you received.</p></div>
+        <div class="step-card"><div class="step-num">02</div><h3>Instant Check</h3><p>We query our live database of reported scam contacts.</p></div>
+        <div class="step-card"><div class="step-num">03</div><h3>See the Details</h3><p>Get risk level, category, report count, and more.</p></div>
+        <div class="step-card"><div class="step-num">04</div><h3>Report New Ones</h3><p>Not found? One click adds it so others stay safe.</p></div>
       </div>
     </div>
 
     <div class="recent-section">
-      <div class="section-title">Recent Entries</div>
+      <div class="section-title">Recent Phone Reports</div>
       <table class="entry-table">
         <thead><tr><th>Number</th><th>Category</th><th>Risk</th><th>Reports</th><th>Date Added</th></tr></thead>
-        <tbody id="recent-tbody">
-          <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">Loading…</td></tr>
-        </tbody>
+        <tbody id="recent-tbody"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:28px">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="recent-section">
+      <div class="section-title">Recent Email Reports</div>
+      <table class="entry-table">
+        <thead><tr><th>Email</th><th>Category</th><th>Risk</th><th>Reports</th><th>Date Added</th></tr></thead>
+        <tbody id="recent-email-tbody"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:28px">Loading…</td></tr></tbody>
       </table>
     </div>
   </div>
+
+  <footer class="site-footer">
+    Scam Likely — community-powered scam protection.<br>
+    Questions or feedback? <a href="mailto:Kittyrexx@proton.me">Kittyrexx@proton.me</a>
+  </footer>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════
-     LOOKUP PAGE
-═════════════════════════════════════════════════════════════ -->
+<!-- ══ PHONE LOOKUP ══ -->
 <div class="page" id="page-lookup">
   <div class="lookup-wrap">
-    <div class="lookup-title">Number Lookup</div>
-    <div class="lookup-sub">Enter a phone number to check it against our scam database</div>
+    <div class="lookup-title">📞 Phone Lookup</div>
+    <div class="lookup-sub">Check a phone number against our scam database</div>
 
     <div class="phone-display">
       <div class="phone-display-num placeholder" id="phone-display">Enter number…</div>
-      <button class="display-backspace" onclick="backspace()" title="Backspace">⌫</button>
+      <button class="display-backspace" onclick="backspace()">⌫</button>
     </div>
 
     <div class="dialpad">
@@ -570,487 +344,464 @@
       <div class="dial-key" onclick="pressKey('7')"><div class="dial-key-num">7</div><div class="dial-key-sub">PQRS</div></div>
       <div class="dial-key" onclick="pressKey('8')"><div class="dial-key-num">8</div><div class="dial-key-sub">TUV</div></div>
       <div class="dial-key" onclick="pressKey('9')"><div class="dial-key-num">9</div><div class="dial-key-sub">WXYZ</div></div>
-      <div class="dial-key special" onclick="pressKey('+')"><div class="dial-key-num" style="font-size:18px">+</div><div class="dial-key-sub">&nbsp;</div></div>
+      <div class="dial-key special" onclick="pressKey('+')"><div class="dial-key-num" style="font-size:17px">+</div><div class="dial-key-sub">&nbsp;</div></div>
       <div class="dial-key" onclick="pressKey('0')"><div class="dial-key-num">0</div><div class="dial-key-sub">+</div></div>
-      <div class="dial-key special" onclick="pressKey('#')"><div class="dial-key-num" style="font-size:18px">#</div><div class="dial-key-sub">&nbsp;</div></div>
+      <div class="dial-key special" onclick="pressKey('#')"><div class="dial-key-num" style="font-size:17px">#</div><div class="dial-key-sub">&nbsp;</div></div>
     </div>
 
-    <button class="search-btn" id="search-btn" onclick="doSearch()">Search</button>
-
-    <div style="text-align:center; margin-bottom: 20px;">
+    <button class="search-btn" id="search-btn" onclick="doPhoneSearch()">Search</button>
+    <div style="text-align:center;margin-bottom:18px">
       <button class="manual-toggle" onclick="toggleManual()">✏ Type manually instead</button>
     </div>
-    <input class="manual-field" id="manual-field" type="tel"
-           placeholder="+1 800-555-0100"
-           oninput="onManualInput(this.value)"
-           onkeydown="if(event.key==='Enter') doSearch()">
+    <input class="manual-field" id="manual-field" type="tel" placeholder="+1 800-555-0100"
+           oninput="onManualInput(this.value)" onkeydown="if(event.key==='Enter')doPhoneSearch()">
 
     <div id="result-area"></div>
 
-    <div class="report-banner">
-      <div>
-        <strong>Found a scam number?</strong>
-        <p>One click adds it to the database and helps protect others.</p>
-      </div>
-      <button class="btn-report-banner" onclick="reportNumber(dialInput)">⚑ Report Number</button>
+    <div class="report-banner" style="background:var(--red)">
+      <div><strong style="color:white">Found a scam number?</strong><p style="color:rgba(255,255,255,.88)">One click adds it to the database.</p></div>
+      <button class="btn-report-banner" style="color:var(--red)" onclick="openReportForm('phone', dialInput)">⚑ Report Number</button>
     </div>
   </div>
 </div>
 
-<!-- ─── REPORT MODAL ───────────────────────────────────────── -->
-<div class="modal-overlay" id="report-modal" style="display:none" onclick="if(event.target===this)closeReportModal()">
+<!-- ══ EMAIL LOOKUP ══ -->
+<div class="page" id="page-email">
+  <div class="lookup-wrap">
+    <div class="lookup-title">✉️ Email Lookup</div>
+    <div class="lookup-sub">Check an email address against our scam database</div>
+
+    <div class="email-display">
+      <span class="email-icon-prefix">✉️</span>
+      <input class="email-field-main" id="email-field" type="email"
+             placeholder="suspicious@example.com"
+             oninput="emailInput=this.value.trim()"
+             onkeydown="if(event.key==='Enter')doEmailSearch()">
+      <button class="email-clear" onclick="clearEmail()">✕</button>
+    </div>
+
+    <button class="search-btn" id="email-search-btn" onclick="doEmailSearch()">Search</button>
+    <div id="email-result-area"></div>
+
+    <div class="report-banner" style="background:var(--blue-sea)">
+      <div><strong style="color:white">Found a scam email?</strong><p style="color:rgba(255,255,255,.88)">One click adds it to the database.</p></div>
+      <button class="btn-report-banner" style="color:var(--blue-sea)" onclick="openReportForm('email', emailInput)">⚑ Report Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REPORT MODAL ══ -->
+<div class="modal-overlay" id="report-modal" style="display:none" onclick="if(event.target===this)closeModal()">
   <div class="modal-box">
-    <div class="modal-header">
-      <div>
-        <h3>Report a Number</h3>
-        <div class="modal-num" id="modal-phone-label"></div>
+
+    <!-- Step 1: type picker -->
+    <div id="step-pick">
+      <div class="modal-head">
+        <div><h3>Report a Scam</h3></div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
       </div>
-      <button class="modal-close" onclick="closeReportModal()">✕</button>
+      <p class="modal-sub">What type of contact did the scammer use?</p>
+      <div class="type-picker">
+        <div class="type-card phone-card" onclick="openReportForm('phone','')">
+          <div class="type-card-icon">📞</div>
+          <h4>Phone Number</h4>
+          <p>Got a suspicious call or text from a number</p>
+        </div>
+        <div class="type-card email-card" onclick="openReportForm('email','')">
+          <div class="type-card-icon">✉️</div>
+          <h4>Email Address</h4>
+          <p>Received a phishing or scam email</p>
+        </div>
+      </div>
     </div>
 
-    <div class="modal-q">Who did they pretend to be?</div>
-    <div class="chip-group" id="chips-pretend">
-      <div class="chip" data-val="irs">IRS / Tax Authority</div>
-      <div class="chip" data-val="social_security">Social Security</div>
-      <div class="chip" data-val="medicare">Medicare</div>
-      <div class="chip" data-val="bank">Bank / Credit Card</div>
-      <div class="chip" data-val="tech_support">Tech Support</div>
-      <div class="chip" data-val="utility">Utility Company</div>
-      <div class="chip" data-val="police">Police / Sheriff</div>
-      <div class="chip" data-val="publisher">Prize / Publisher</div>
-      <div class="chip" data-val="insurance">Insurance</div>
-      <div class="chip" data-val="other">Other</div>
-      <div class="chip na" data-val="na">Not Applicable</div>
+    <!-- Step 2: report form -->
+    <div id="step-form" class="report-form">
+      <div class="modal-head">
+        <div>
+          <h3 id="form-title">Report a Number</h3>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px" id="form-subtitle"></div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+
+      <button class="back-btn" onclick="goBackToPicker()">← Back</button>
+
+      <div class="modal-q" id="input-label">Phone number</div>
+      <input class="rform-input" id="report-subject-input" placeholder="Enter here…"
+             oninput="_reportSubject=this.value.trim()">
+
+      <div class="modal-q">Who did they pretend to be?</div>
+      <div class="chip-group" id="chips-pretend">
+        <div class="chip" data-val="irs">IRS / Tax Authority</div>
+        <div class="chip" data-val="social_security">Social Security</div>
+        <div class="chip" data-val="medicare">Medicare</div>
+        <div class="chip" data-val="bank">Bank / Credit Card</div>
+        <div class="chip" data-val="tech_support">Tech Support</div>
+        <div class="chip" data-val="utility">Utility Company</div>
+        <div class="chip" data-val="police">Police / Sheriff</div>
+        <div class="chip" data-val="publisher">Prize / Publisher</div>
+        <div class="chip" data-val="insurance">Insurance</div>
+        <div class="chip" data-val="other">Other</div>
+        <div class="chip na" data-val="na">Not Applicable</div>
+      </div>
+
+      <div class="modal-q">What did they ask for?</div>
+      <div class="chip-group" id="chips-asked">
+        <div class="chip" data-val="money">Money / Payment</div>
+        <div class="chip" data-val="gift_cards">Gift Cards</div>
+        <div class="chip" data-val="bank_info">Bank Info</div>
+        <div class="chip" data-val="ssn">Social Security #</div>
+        <div class="chip" data-val="personal_info">Personal Info</div>
+        <div class="chip" data-val="remote_access">Remote Access</div>
+        <div class="chip" data-val="crypto">Cryptocurrency</div>
+        <div class="chip" data-val="passwords">Passwords / Login</div>
+        <div class="chip" data-val="nothing">Nothing yet</div>
+        <div class="chip na" data-val="na">Not Applicable</div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+        <button class="modal-submit" id="modal-submit-btn" onclick="submitReport()">⚑ Submit Report</button>
+      </div>
     </div>
 
-    <div class="modal-q">What did they ask for?</div>
-    <div class="chip-group" id="chips-asked">
-      <div class="chip" data-val="money">Money / Payment</div>
-      <div class="chip" data-val="gift_cards">Gift Cards</div>
-      <div class="chip" data-val="bank_info">Bank Info</div>
-      <div class="chip" data-val="ssn">Social Security #</div>
-      <div class="chip" data-val="personal_info">Personal Info</div>
-      <div class="chip" data-val="remote_access">Remote Access</div>
-      <div class="chip" data-val="crypto">Cryptocurrency</div>
-      <div class="chip" data-val="passwords">Passwords / Login</div>
-      <div class="chip" data-val="nothing">Nothing yet</div>
-      <div class="chip na" data-val="na">Not Applicable</div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="modal-cancel" onclick="closeReportModal()">Cancel</button>
-      <button class="modal-submit" id="modal-submit-btn" onclick="submitReport()">⚑ Submit Report</button>
-    </div>
   </div>
 </div>
 
-<!-- ─── DB ERROR POPUP ─────────────────────────────────────── -->
+<!-- DB ERROR -->
 <div class="db-error-overlay" id="db-error-overlay" style="display:none">
   <div class="db-error-box">
     <div class="db-error-icon">⚠️</div>
     <h2>Database Unavailable</h2>
-    <p>Could not connect to Supabase. Lookup and reporting have been disabled.</p>
+    <p>Could not connect to Supabase. Lookup and reporting are disabled.</p>
     <div class="db-error-code" id="db-error-detail">Connection failed</div>
-    <p style="font-size:12px;margin-bottom:20px">Check that your <code style="font-family:var(--mono);background:var(--bg);padding:2px 5px;border-radius:4px">SUPABASE_URL</code> and <code style="font-family:var(--mono);background:var(--bg);padding:2px 5px;border-radius:4px">SUPABASE_ANON</code> keys are set correctly.</p>
+    <p style="font-size:12px;margin-bottom:18px">Need help? Email <a href="mailto:Kittyrexx@proton.me" style="color:var(--red)">Kittyrexx@proton.me</a></p>
     <button class="db-error-dismiss" onclick="document.getElementById('db-error-overlay').style.display='none'">Got it</button>
   </div>
 </div>
 
 <script>
-// ─── State ────────────────────────────────────────────────────
-let dialInput    = '';
-let dbReady      = false;
-let manualVisible = false;
+// ── State ──────────────────────────────────────────────────────
+let dialInput      = '';
+let emailInput     = '';
+let dbReady        = false;
+let manualVisible  = false;
+let _reportType    = 'phone';
+let _reportSubject = '';
 
-// ─── Number normalisation ─────────────────────────────────────
-function digitsOnly(raw) { return String(raw).replace(/\D/g, ''); }
-
-function localDigits(raw) {
-  let d = digitsOnly(raw);
-  if (d.length === 11 && d[0] === '1') d = d.slice(1);
-  if (d.length > 10) d = d.slice(d.length - 10);
+// ── Normalisation ─────────────────────────────────────────────
+function digitsOnly(r){ return String(r).replace(/\D/g,''); }
+function localDigits(r){
+  let d=digitsOnly(r);
+  if(d.length===11&&d[0]==='1') d=d.slice(1);
+  if(d.length>10) d=d.slice(d.length-10);
   return d;
 }
+function normalizeEmail(r){ return String(r).trim().toLowerCase(); }
 
-// ─── DB connection check ──────────────────────────────────────
-async function initDB() {
-  try {
-    const { error } = await sb.from('numbers').select('phone_number').limit(1);
-    if (error) throw error;
-    dbReady = true;
-    loadStats();
-    loadRecentTable();
-  } catch (e) {
-    showDbError(e.message || 'Could not reach Supabase');
-  }
+// ── DB init ───────────────────────────────────────────────────
+async function initDB(){
+  try{
+    const {error}=await sb.from('numbers').select('phone_number').limit(1);
+    if(error) throw error;
+    dbReady=true;
+    loadStats(); loadRecentTable(); loadRecentEmailTable();
+  }catch(e){ showDbError(e.message||'Could not reach Supabase'); }
 }
-
-function showDbError(msg) {
-  document.getElementById('db-error-detail').textContent = msg;
-  document.getElementById('db-error-overlay').style.display = 'flex';
-  // Disable lookup
-  const wrap = document.querySelector('.lookup-wrap');
-  if (!wrap.querySelector('.lookup-disabled-banner')) {
-    const b = document.createElement('div');
-    b.className = 'lookup-disabled-banner';
-    b.innerHTML = '<span>🚫</span><span><strong>Lookup unavailable</strong> — cannot connect to the database.</span>';
-    wrap.insertBefore(b, wrap.firstChild);
-  }
-  const btn = document.getElementById('search-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Database Unavailable'; }
-  document.querySelectorAll('.dial-key').forEach(k => { k.style.opacity='0.4'; k.style.pointerEvents='none'; });
-  document.querySelector('.display-backspace').style.cssText += 'opacity:0.4;pointer-events:none';
-}
-
-// ─── Stats ────────────────────────────────────────────────────
-async function loadStats() {
-  try {
-    const { data, error } = await sb.from('numbers').select('date_added, reports, status');
-    if (error) throw error;
-    const total   = data.length;
-    const active  = data.filter(e => !isExpired(e)).length;
-    const reports = data.reduce((s, e) => s + (e.reports || 0), 0);
-    document.getElementById('stat-total').textContent   = total.toLocaleString();
-    document.getElementById('stat-active').textContent  = active.toLocaleString();
-    document.getElementById('stat-reports').textContent = reports.toLocaleString();
-  } catch (e) { console.error('Stats error:', e); }
-}
-
-// ─── Recent table ─────────────────────────────────────────────
-async function loadRecentTable() {
-  const tbody = document.getElementById('recent-tbody');
-  try {
-    const { data, error } = await sb
-      .from('numbers')
-      .select('phone_number, category, reports, date_added, pretends_to_be')
-      .order('date_added', { ascending: false })
-      .limit(10);
-    if (error) throw error;
-    if (!data.length) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">No entries yet.</td></tr>';
-      return;
+function showDbError(msg){
+  document.getElementById('db-error-detail').textContent=msg;
+  document.getElementById('db-error-overlay').style.display='flex';
+  ['lookup','email'].forEach(p=>{
+    const w=document.querySelector(`#page-${p} .lookup-wrap`);
+    if(w&&!w.querySelector('.lookup-disabled-banner')){
+      const b=document.createElement('div');
+      b.className='lookup-disabled-banner';
+      b.innerHTML='<span>🚫</span><span><strong>Unavailable</strong> — cannot connect to the database.</span>';
+      w.insertBefore(b,w.firstChild);
     }
-    tbody.innerHTML = data.map(e => {
-      const exp  = isExpired(e);
-      const risk = calcRisk(e.reports);
-      const rc   = { high:'pill-high', medium:'pill-medium', low:'pill-low' }[risk];
-      return `<tr>
-        <td class="mono">${e.phone_number}</td>
-        <td>${formatCategory(e.category, e.pretends_to_be)}</td>
-        <td><span class="pill ${rc}">${risk}</span></td>
-        <td>${e.reports || 0}</td>
-        <td style="color:var(--text-muted)">${formatDate(e.date_added)}${exp ? ' <span style="color:var(--amber);font-size:11px">(exp)</span>' : ''}</td>
-      </tr>`;
-    }).join('');
-  } catch (e) {
-    console.error('Recent table error:', e);
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px">Could not load entries.</td></tr>';
-  }
+  });
+  ['search-btn','email-search-btn'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(b){b.disabled=true;b.textContent='Database Unavailable';}
+  });
+  document.querySelectorAll('.dial-key').forEach(k=>{k.style.opacity='.4';k.style.pointerEvents='none';});
 }
 
-// ─── Risk calculation (based on report count) ─────────────────
-// ⚙ Edit these thresholds to tune risk levels
-function calcRisk(reports) {
-  const n = reports || 0;
-  if (n >= 5)  return 'high';
-  if (n >= 2)  return 'medium';
-  return 'low';
+// ── Stats ─────────────────────────────────────────────────────
+async function loadStats(){
+  try{
+    const [nr,er]=await Promise.all([
+      sb.from('numbers').select('date_added,reports'),
+      sb.from('emails').select('date_added,reports')
+    ]);
+    const nums=nr.data||[], emails=er.data||[];
+    const active=[...nums,...emails].filter(e=>!isExpired(e)).length;
+    const rpts=[...nums,...emails].reduce((s,e)=>s+(e.reports||0),0);
+    document.getElementById('stat-numbers').textContent=nums.length.toLocaleString();
+    document.getElementById('stat-emails').textContent=emails.length.toLocaleString();
+    document.getElementById('stat-active').textContent=active.toLocaleString();
+    document.getElementById('stat-reports').textContent=rpts.toLocaleString();
+  }catch(e){console.error('Stats:',e);}
 }
 
-// ─── Helpers ──────────────────────────────────────────────────
-function isExpired(entry) {
-  if (!entry.date_added) return false;
-  return (Date.now() - new Date(entry.date_added).getTime()) > EXPIRY_DAYS * 86400000;
+// ── Recent tables ─────────────────────────────────────────────
+async function loadRecentTable(){
+  const tb=document.getElementById('recent-tbody');
+  try{
+    const {data,error}=await sb.from('numbers')
+      .select('phone_number,category,reports,date_added,pretends_to_be')
+      .order('date_added',{ascending:false}).limit(10);
+    if(error) throw error;
+    tb.innerHTML=!data.length
+      ?'<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:28px">No entries yet.</td></tr>'
+      :data.map(e=>{
+          const risk=calcRisk(e.reports),rc={high:'pill-high',medium:'pill-medium',low:'pill-low'}[risk],exp=isExpired(e);
+          return`<tr><td class="mono">${e.phone_number}</td><td>${formatCat(e.category,e.pretends_to_be)}</td><td><span class="pill ${rc}">${risk}</span></td><td>${e.reports||0}</td><td style="color:var(--text-muted)">${formatDate(e.date_added)}${exp?' <span style="color:var(--amber);font-size:10px">(exp)</span>':''}</td></tr>`;
+        }).join('');
+  }catch(e){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:28px">Could not load.</td></tr>';}
 }
-function daysUntilExpiry(entry) {
-  if (!entry.date_added) return null;
-  const exp = new Date(entry.date_added).getTime() + EXPIRY_DAYS * 86400000;
-  return Math.ceil((exp - Date.now()) / 86400000);
-}
-function formatCategory(cat, pretends) {
-  // Prefer pretends_to_be as the human-readable category label
-  const PRETEND_LABELS = {
-    irs:            'IRS / Tax Authority',
-    social_security:'Social Security',
-    medicare:       'Medicare',
-    bank:           'Bank / Credit Card',
-    tech_support:   'Tech Support',
-    utility:        'Utility Company',
-    police:         'Police / Sheriff',
-    publisher:      'Prize / Publisher',
-    insurance:      'Insurance',
-    other:          'Other',
-  };
-  if (pretends && pretends !== 'na' && PRETEND_LABELS[pretends]) return PRETEND_LABELS[pretends];
-  if (!cat) return '—';
-  return cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-}
-function formatDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+async function loadRecentEmailTable(){
+  const tb=document.getElementById('recent-email-tbody');
+  try{
+    const {data,error}=await sb.from('emails')
+      .select('email_address,category,reports,date_added,pretends_to_be')
+      .order('date_added',{ascending:false}).limit(10);
+    if(error) throw error;
+    tb.innerHTML=!data.length
+      ?'<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:28px">No entries yet.</td></tr>'
+      :data.map(e=>{
+          const risk=calcRisk(e.reports),rc={high:'pill-high',medium:'pill-medium',low:'pill-low'}[risk],exp=isExpired(e);
+          return`<tr><td class="mono" style="font-size:11.5px">${e.email_address}</td><td>${formatCat(e.category,e.pretends_to_be)}</td><td><span class="pill ${rc}">${risk}</span></td><td>${e.reports||0}</td><td style="color:var(--text-muted)">${formatDate(e.date_added)}${exp?' <span style="color:var(--amber);font-size:10px">(exp)</span>':''}</td></tr>`;
+        }).join('');
+  }catch(e){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:28px">Could not load.</td></tr>';}
 }
 
-// ─── Report modal ─────────────────────────────────────────────
-let _reportPhone = '';
+// ── Helpers ───────────────────────────────────────────────────
+function calcRisk(r){ const n=r||0; return n>=5?'high':n>=2?'medium':'low'; }
+function isExpired(e){ if(!e.date_added)return false; return(Date.now()-new Date(e.date_added).getTime())>EXPIRY_DAYS*86400000; }
+function daysUntilExpiry(e){ if(!e.date_added)return null; return Math.ceil((new Date(e.date_added).getTime()+EXPIRY_DAYS*86400000-Date.now())/86400000); }
+const PLABELS={irs:'IRS / Tax Authority',social_security:'Social Security',medicare:'Medicare',bank:'Bank / Credit Card',tech_support:'Tech Support',utility:'Utility Company',police:'Police / Sheriff',publisher:'Prize / Publisher',insurance:'Insurance',other:'Other'};
+function formatCat(cat,pretends){
+  if(pretends&&pretends!=='na'&&PLABELS[pretends])return PLABELS[pretends];
+  if(!cat)return'—';
+  return cat.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+}
+function formatDate(iso){ if(!iso)return'—'; return new Date(iso).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}); }
 
-function reportNumber(phone) {
-  const normalized = localDigits(phone);
-  if (!normalized || normalized.length < 7) {
-    alert('Enter a phone number first, then hit Report.');
+// ── Nav / theme ───────────────────────────────────────────────
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  document.body.className = name==='email' ? 'theme-email' : 'theme-phone';
+  window.scrollTo(0,0);
+}
+
+// ── Dialpad ───────────────────────────────────────────────────
+function pressKey(k){
+  const d=dialInput.replace(/\D/g,'');
+  if(k==='+'){if(!dialInput.length)dialInput='+';}
+  else if(k==='#'||d.length<15) dialInput+=k;
+  updateDisplay();
+  document.getElementById('manual-field').value=dialInput;
+}
+function backspace(){ dialInput=dialInput.slice(0,-1); updateDisplay(); document.getElementById('manual-field').value=dialInput; }
+function updateDisplay(){
+  const el=document.getElementById('phone-display');
+  if(dialInput){el.textContent=dialInput;el.classList.remove('placeholder');}
+  else{el.textContent='Enter number…';el.classList.add('placeholder');}
+}
+function toggleManual(){
+  manualVisible=!manualVisible;
+  const f=document.getElementById('manual-field');
+  f.classList.toggle('visible',manualVisible);
+  if(manualVisible)f.focus();
+}
+function onManualInput(v){ dialInput=v; updateDisplay(); }
+function clearEmail(){ emailInput=''; document.getElementById('email-field').value=''; document.getElementById('email-result-area').innerHTML=''; }
+
+// ── Phone search ──────────────────────────────────────────────
+function doPhoneSearch(){
+  if(!dbReady)return;
+  const q=dialInput.trim();
+  if(!q||digitsOnly(q).length<7)return;
+  const btn=document.getElementById('search-btn');
+  btn.innerHTML='<span class="loading-ring"></span>'; btn.disabled=true;
+  (async()=>{
+    try{
+      const {data,error}=await sb.from('numbers').select('*').eq('phone_number',localDigits(q)).maybeSingle();
+      if(error)throw error;
+      renderResult('phone',q,data,'result-area');
+    }catch(e){ document.getElementById('result-area').innerHTML=`<div class="not-found-card"><div class="not-found-icon">⚠️</div><h3>Lookup Failed</h3><p>${e.message}</p></div>`; }
+    finally{btn.innerHTML='Search';btn.disabled=false;}
+  })();
+}
+
+// ── Email search ──────────────────────────────────────────────
+function doEmailSearch(){
+  if(!dbReady)return;
+  const q=emailInput.trim();
+  if(!q||!q.includes('@'))return;
+  const btn=document.getElementById('email-search-btn');
+  btn.innerHTML='<span class="loading-ring"></span>'; btn.disabled=true;
+  (async()=>{
+    try{
+      const {data,error}=await sb.from('emails').select('*').eq('email_address',normalizeEmail(q)).maybeSingle();
+      if(error)throw error;
+      renderResult('email',q,data,'email-result-area');
+    }catch(e){ document.getElementById('email-result-area').innerHTML=`<div class="not-found-card"><div class="not-found-icon">⚠️</div><h3>Lookup Failed</h3><p>${e.message}</p></div>`; }
+    finally{btn.innerHTML='Search';btn.disabled=false;}
+  })();
+}
+
+// ── Render result ─────────────────────────────────────────────
+function renderResult(type,query,entry,areaId){
+  const area=document.getElementById(areaId);
+  const isEmail=type==='email';
+  const reportCall=isEmail?`openReportForm('email','${query}')`:`openReportForm('phone',dialInput)`;
+
+  if(!entry){
+    area.innerHTML=`<div class="not-found-card">
+      <div class="not-found-icon">✅</div>
+      <h3>Not Found in Database</h3>
+      <p><strong style="font-family:var(--mono)">${query}</strong> isn't in our database — that's a good sign. If it seemed suspicious, report it.</p>
+      <div class="not-found-actions">
+        <button class="btn-report-inline" onclick="${reportCall}" style="${isEmail?'background:var(--blue-sea)':''}">⚑ Report This ${isEmail?'Email':'Number'}</button>
+      </div></div>`;
     return;
   }
-  _reportPhone = normalized;
 
-  // Reset chips
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  const expired=isExpired(entry),remaining=daysUntilExpiry(entry);
+  const statusClass=expired?'result-status-expired':(isEmail?'result-status-flagged-blue':'result-status-flagged');
+  const badgeClass=expired?'badge-expired':(isEmail?'badge-danger-blue':'badge-danger');
+  const dotClass=expired?'dot-expired':(isEmail?'dot-danger-blue':'dot-danger');
+  const riskClass={high:'risk-high',medium:'risk-medium',low:'risk-low'}[calcRisk(entry.reports)];
+  const displayVal=isEmail?entry.email_address:entry.phone_number;
+  const expiryNote=expired?`<span style="color:var(--amber)">Expired — may no longer be active</span>`:remaining!==null?`<span>Expires in <strong>${remaining}</strong> day${remaining!==1?'s':''}</span>`:'';
+  const askedLabel=entry.asked_for?entry.asked_for.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()):'—';
+  const reportCallFooter=isEmail?`openReportForm('email','${displayVal}')`:`openReportForm('phone',dialInput)`;
 
-  // Set number label
-  document.getElementById('modal-phone-label').textContent = phone;
-
-  // Reset submit button
-  const btn = document.getElementById('modal-submit-btn');
-  btn.disabled = false;
-  btn.textContent = '⚑ Submit Report';
-
-  document.getElementById('report-modal').style.display = 'flex';
+  area.innerHTML=`<div class="result-card">
+    <div class="result-header ${statusClass}">
+      <div class="result-phone">${displayVal}</div>
+      <span class="status-badge ${badgeClass}"><span class="status-dot ${dotClass}"></span>${expired?'Expired':'Flagged'}</span>
+    </div>
+    <div class="result-body">
+      <div class="result-grid">
+        <div class="result-field"><label>Category</label><div class="val">${formatCat(entry.category,entry.pretends_to_be)}</div></div>
+        <div class="result-field"><label>Risk Level</label><div class="val ${riskClass}">${calcRisk(entry.reports).toUpperCase()}</div></div>
+        <div class="result-field"><label>Status</label><div class="val">${entry.status||'—'}</div></div>
+        <div class="result-field"><label>Reports</label><div class="val">${entry.reports||0}</div></div>
+        <div class="result-field"><label>Asked For</label><div class="val">${askedLabel}</div></div>
+        <div class="result-field"><label>Date Added</label><div class="val">${formatDate(entry.date_added)}</div></div>
+      </div>
+    </div>
+    <div class="result-footer">
+      <div class="result-footer-note">${expiryNote}</div>
+      <button class="btn-report-inline" onclick="${reportCallFooter}" style="${isEmail?'background:var(--blue-sea)':''}">⚑ Add Report</button>
+    </div>
+  </div>`;
 }
 
-function closeReportModal() {
-  document.getElementById('report-modal').style.display = 'none';
+// ── Modal: type picker ────────────────────────────────────────
+function openTypePicker(){
+  document.getElementById('step-pick').style.display='block';
+  document.getElementById('step-form').classList.remove('active');
+  document.getElementById('report-modal').style.display='flex';
+}
+function closeModal(){
+  document.getElementById('report-modal').style.display='none';
+}
+function goBackToPicker(){
+  document.getElementById('step-form').classList.remove('active');
+  document.getElementById('step-pick').style.display='block';
 }
 
-// Chip toggle — single select per group
-document.querySelectorAll('.chip-group').forEach(group => {
-  group.addEventListener('click', e => {
-    const chip = e.target.closest('.chip');
-    if (!chip) return;
-    group.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+// ── Modal: report form ────────────────────────────────────────
+function openReportForm(type, subject){
+  _reportType=type;
+  _reportSubject = type==='email' ? normalizeEmail(subject||'') : localDigits(subject||'');
+
+  document.getElementById('step-pick').style.display='none';
+  const form=document.getElementById('step-form');
+  form.classList.add('active');
+
+  const isEmail=type==='email';
+  document.getElementById('form-title').textContent=isEmail?'Report an Email':'Report a Number';
+  document.getElementById('input-label').textContent=isEmail?'Email address':'Phone number';
+  const inp=document.getElementById('report-subject-input');
+  inp.type=isEmail?'email':'tel';
+  inp.placeholder=isEmail?'scammer@example.com':'+1 800-555-0100';
+  inp.value=_reportSubject||'';
+  _reportSubject=inp.value;
+
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+  const btn=document.getElementById('modal-submit-btn');
+  btn.disabled=false; btn.textContent='⚑ Submit Report'; btn.style.background='';
+
+  document.getElementById('report-modal').style.display='flex';
+}
+
+// Chip toggle
+document.querySelectorAll('.chip-group').forEach(group=>{
+  group.addEventListener('click',e=>{
+    const chip=e.target.closest('.chip');
+    if(!chip)return;
+    group.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
     chip.classList.add('selected');
   });
 });
+function getChip(id){ const s=document.querySelector(`#${id} .chip.selected`); return s?s.dataset.val:null; }
 
-function getChipVal(groupId) {
-  const sel = document.querySelector(`#${groupId} .chip.selected`);
-  return sel ? sel.dataset.val : null;
-}
+// ── Submit ─────────────────────────────────────────────────────
+async function submitReport(){
+  const rawSubject = document.getElementById('report-subject-input').value.trim();
+  const subject = _reportType==='email' ? normalizeEmail(rawSubject) : localDigits(rawSubject);
 
-// ─── Map pretends_to_be → category ────────────────────────────
-const PRETEND_TO_CATEGORY = {
-  irs:            'tax_relief_scam',
-  social_security:'government_impersonation',
-  medicare:       'government_impersonation',
-  bank:           'financial_scam',
-  tech_support:   'tech_support_scam',
-  utility:        'utility_scam',
-  police:         'government_impersonation',
-  publisher:      'prize_scam',
-  insurance:      'insurance_scam',
-  other:          'unknown',
-  na:             'unknown'
-};
-
-async function submitReport() {
-  const normalized  = _reportPhone;
-  const pretendedAs = getChipVal('chips-pretend');
-  const askedFor    = getChipVal('chips-asked');
-
-  const btn = document.getElementById('modal-submit-btn');
-  btn.disabled = true;
-  btn.textContent = 'Submitting…';
-
-  try {
-    const { data: existing, error: fetchErr } = await sb
-      .from('numbers')
-      .select('phone_number, reports')
-      .eq('phone_number', normalized)
-      .maybeSingle();
-    if (fetchErr) throw fetchErr;
-
-    if (existing) {
-      const updates = { reports: (existing.reports || 0) + 1 };
-      if (pretendedAs && pretendedAs !== 'na') updates.pretends_to_be = pretendedAs;
-      if (askedFor    && askedFor    !== 'na') updates.asked_for      = askedFor;
-      const { error } = await sb.from('numbers').update(updates).eq('phone_number', normalized);
-      if (error) throw error;
-    } else {
-      const row = {
-        phone_number: normalized,
-        category:     'unknown',
-        reports:      1,
-        status:       'unverified',
-        date_added:   new Date().toISOString()
-      };
-      if (pretendedAs && pretendedAs !== 'na') row.pretends_to_be = pretendedAs;
-      if (askedFor    && askedFor    !== 'na') row.asked_for      = askedFor;
-      const { error } = await sb.from('numbers').insert(row);
-      if (error) throw error;
-    }
-
-    btn.textContent = 'Reported ✔';
-    btn.style.background = 'var(--green)';
-
-    // Update inline report buttons too
-    document.querySelectorAll('.btn-report-inline, .btn-report-banner').forEach(b => {
-      b.textContent = 'Reported ✔';
-      b.style.background = 'var(--green)';
-      b.disabled = true;
-    });
-
-    loadStats();
-    loadRecentTable();
-
-    setTimeout(() => {
-      closeReportModal();
-      document.querySelectorAll('.btn-report-inline, .btn-report-banner').forEach(b => {
-        b.disabled = false;
-        b.textContent = '⚑ Report Number';
-        b.style.background = '';
-      });
-    }, 1800);
-
-  } catch (e) {
-    console.error('submitReport error:', e);
-    btn.disabled = false;
-    btn.textContent = '⚑ Submit Report';
-    btn.style.background = '';
-    alert('Report failed: ' + (e.message || 'unknown error'));
-  }
-}
-
-// ─── Nav ──────────────────────────────────────────────────────
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  document.getElementById('nav-' + name).classList.add('active');
-  window.scrollTo(0, 0);
-}
-
-// ─── Dialpad ──────────────────────────────────────────────────
-function pressKey(k) {
-  const digits = dialInput.replace(/\D/g, '');
-  if (k === '+') { if (dialInput.length === 0) dialInput = '+'; }
-  else if (k === '#' || digits.length < 15) dialInput += k;
-  updateDisplay();
-  document.getElementById('manual-field').value = dialInput;
-}
-function backspace() {
-  dialInput = dialInput.slice(0, -1);
-  updateDisplay();
-  document.getElementById('manual-field').value = dialInput;
-}
-function updateDisplay() {
-  const el = document.getElementById('phone-display');
-  if (dialInput) { el.textContent = dialInput; el.classList.remove('placeholder'); }
-  else { el.textContent = 'Enter number…'; el.classList.add('placeholder'); }
-}
-function toggleManual() {
-  manualVisible = !manualVisible;
-  const f = document.getElementById('manual-field');
-  f.classList.toggle('visible', manualVisible);
-  if (manualVisible) f.focus();
-}
-function onManualInput(val) { dialInput = val; updateDisplay(); }
-
-// ─── Search ───────────────────────────────────────────────────
-function doSearch() {
-  if (!dbReady) return;
-  const query = dialInput.trim();
-  if (!query || digitsOnly(query).length < 7) return;
-  const btn = document.getElementById('search-btn');
-  btn.innerHTML = '<span class="loading-ring"></span>';
-  btn.disabled = true;
-  lookupAndRender(query).finally(() => {
-    btn.innerHTML = 'Search';
-    btn.disabled = false;
-  });
-}
-
-async function lookupAndRender(query) {
-  const normalized = localDigits(query);
-  try {
-    const { data, error } = await sb
-      .from('numbers')
-      .select('*')
-      .eq('phone_number', normalized)
-      .maybeSingle();
-    if (error) throw error;
-    renderResult(query, data);
-  } catch (e) {
-    console.error('Lookup error:', e);
-    document.getElementById('result-area').innerHTML =
-      `<div class="not-found-card"><div class="not-found-icon">⚠️</div><h3>Lookup Failed</h3><p>${e.message}</p></div>`;
-  }
-}
-
-// ─── Render result ─────────────────────────────────────────────
-function renderResult(query, entry) {
-  const area = document.getElementById('result-area');
-
-  if (!entry) {
-    area.innerHTML = `
-      <div class="not-found-card">
-        <div class="not-found-icon">✅</div>
-        <h3>Not Found in Database</h3>
-        <p><strong style="font-family:var(--mono)">${query}</strong> isn't in our database.
-        That's a good sign — but if the call was suspicious, report it with one click.</p>
-        <div class="not-found-actions">
-          <button class="btn-primary" onclick="doSearch()" style="margin:0">🔍 Search Again</button>
-          <button class="btn-report-inline" onclick="reportNumber(dialInput)">⚑ Report This Number</button>
-        </div>
-      </div>`;
+  if(!subject || (_reportType==='phone'&&subject.length<7) || (_reportType==='email'&&!subject.includes('@'))){
+    alert(`Please enter a valid ${_reportType==='email'?'email address':'phone number'}.`);
     return;
   }
 
-  const expired = isExpired(entry);
-  const remaining = daysUntilExpiry(entry);
+  const table    = _reportType==='email' ? 'emails' : 'numbers';
+  const field    = _reportType==='email' ? 'email_address' : 'phone_number';
+  const pretends = getChip('chips-pretend');
+  const asked    = getChip('chips-asked');
 
-  const statusClass = expired ? 'result-status-expired' : 'result-status-flagged';
-  const badgeClass  = expired ? 'badge-expired' : 'badge-danger';
-  const dotClass    = expired ? 'dot-expired' : 'dot-danger';
-  const statusLabel = expired ? 'Expired Record' : 'Flagged';
-  const riskClass   = { high:'risk-high', medium:'risk-medium', low:'risk-low' }[calcRisk(entry.reports)];
+  const btn=document.getElementById('modal-submit-btn');
+  btn.disabled=true; btn.textContent='Submitting…';
 
-  const notesHtml = (entry.notes || []).map(n => `<div class="note-item">${n}</div>`).join('');
-  const tagsHtml  = (entry.tags  || []).map(t => `<span class="tag">${t}</span>`).join('');
-  const expiryNote = expired
-    ? `<span style="color:var(--amber)">Record expired — may no longer be active</span>`
-    : remaining !== null
-      ? `<span>Expires in <strong>${remaining}</strong> day${remaining !== 1 ? 's' : ''}</span>`
-      : '';
+  try{
+    const {data:existing,error:fe}=await sb.from(table).select(`${field},reports`).eq(field,subject).maybeSingle();
+    if(fe)throw fe;
 
-  area.innerHTML = `
-    <div class="result-card">
-      <div class="result-header ${statusClass}">
-        <div class="result-phone">${entry.phone_number}</div>
-        <span class="status-badge ${badgeClass}">
-          <span class="status-dot ${dotClass}"></span>
-          ${statusLabel}
-        </span>
-      </div>
-      <div class="result-body">
-        <div class="result-grid">
-          <div class="result-field"><label>Category</label><div class="val">${formatCategory(entry.category, entry.pretends_to_be)}</div></div>
-          <div class="result-field"><label>Risk Level</label><div class="val ${riskClass}">${calcRisk(entry.reports).toUpperCase()}</div></div>
-          <div class="result-field"><label>Status</label><div class="val">${entry.status || '—'}</div></div>
-          <div class="result-field"><label>Reports</label><div class="val" id="report-count-display">${entry.reports || 0}</div></div>
-          <div class="result-field"><label>Country</label><div class="val">${entry.country || '—'}</div></div>
-          <div class="result-field"><label>Date Added</label><div class="val">${formatDate(entry.date_added)}</div></div>
-        </div>
-        ${notesHtml || tagsHtml ? `
-        <div class="notes-section">
-          ${notesHtml ? `<div class="notes-label">Notes</div>${notesHtml}` : ''}
-          ${tagsHtml  ? `<div class="tags-row">${tagsHtml}</div>` : ''}
-        </div>` : ''}
-      </div>
-      <div class="result-footer">
-        <div class="result-footer-note">${expiryNote}</div>
-        <button class="btn-report-inline" onclick="reportNumber(dialInput)">⚑ Report Number</button>
-      </div>
-    </div>`;
+    if(existing){
+      const updates={reports:(existing.reports||0)+1};
+      if(pretends&&pretends!=='na') updates.pretends_to_be=pretends;
+      if(asked&&asked!=='na')       updates.asked_for=asked;
+      const {error}=await sb.from(table).update(updates).eq(field,subject);
+      if(error)throw error;
+    }else{
+      const row={[field]:subject,category:'unknown',reports:1,status:'unverified',date_added:new Date().toISOString()};
+      if(pretends&&pretends!=='na') row.pretends_to_be=pretends;
+      if(asked&&asked!=='na')       row.asked_for=asked;
+      const {error}=await sb.from(table).insert(row);
+      if(error)throw error;
+    }
+
+    btn.textContent='Reported ✔'; btn.style.background='var(--green)';
+    loadStats(); loadRecentTable(); loadRecentEmailTable();
+    setTimeout(()=>{ closeModal(); },1800);
+
+  }catch(e){
+    console.error('submitReport:',e);
+    btn.disabled=false; btn.textContent='⚑ Submit Report'; btn.style.background='';
+    alert('Report failed: '+(e.message||'unknown error'));
+  }
 }
 
-// ─── Init ─────────────────────────────────────────────────────
 initDB();
 </script>
 </body>
